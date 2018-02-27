@@ -16,6 +16,8 @@ import us.ihmc.robotics.robotSide.RobotSide;
 import us.ihmc.yoVariables.registry.YoVariableRegistry;
 import us.ihmc.yoVariables.variable.YoBoolean;
 
+import java.util.Set;
+
 public class YoQuadrupedSupportPolygon
 {
    private final String namePrefix;

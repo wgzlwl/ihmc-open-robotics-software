@@ -1,6 +1,6 @@
 package us.ihmc.robotics.robotSide;
 
-import java.util.EnumMap;
+import java.util.*;
 
 public class SegmentDependentList<E extends Enum<E> & RobotSegment<E>, V> extends EnumMap<E, V>
 { 
@@ -25,5 +25,4 @@ public class SegmentDependentList<E extends Enum<E> & RobotSegment<E>, V> extend
    {
       return this.containsKey(robotSegment);
    }
-   
 }

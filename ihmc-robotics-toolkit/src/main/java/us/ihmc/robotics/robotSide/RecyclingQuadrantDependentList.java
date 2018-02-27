@@ -1,6 +1,7 @@
 package us.ihmc.robotics.robotSide;
 
 import java.lang.reflect.Array;
+import java.util.Set;
 
 import us.ihmc.robotics.lists.GenericTypeBuilder;
 
@@ -123,6 +124,6 @@ public class RecyclingQuadrantDependentList<V>
    
    public boolean containsQuadrant(RobotQuadrant robotQuadrant)
    {
-      return quadrantDependentList.containsQuadrant(robotQuadrant);
+      return quadrantDependentList.containsKey(robotQuadrant);
    }
 }

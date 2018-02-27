@@ -3,6 +3,7 @@ package us.ihmc.quadrupedRobotics.geometry.supportPolygon;
 import static us.ihmc.robotics.robotSide.RobotQuadrant.*;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import us.ihmc.euclid.geometry.tools.EuclidGeometryTools;
 import us.ihmc.euclid.referenceFrame.FrameLine2D;
