@@ -4,7 +4,6 @@ import java.util.Set;
 
 public interface JointNameMap extends RobotSpecificJointNames
 {
-
    String getModelName();
 
    default double getModelScale()
@@ -41,11 +40,8 @@ public interface JointNameMap extends RobotSpecificJointNames
 
    SpineJointName getSpineJointName(String jointName);
 
-   String getPelvisName();
 
    String getUnsanitizedRootJointInSdf();
-
-   String getChestName();
 
    String getHeadName();
 
