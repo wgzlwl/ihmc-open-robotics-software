@@ -21,6 +21,12 @@ public interface HumanoidJointNameMap extends LeggedJointNameMap<RobotSide>
 
    String getChestName();
 
+   @Override
+   default RobotSide[] getRobotSegments()
+   {
+      return RobotSide.values;
+   }
+
    @Deprecated
    RigidBodyTransform getSoleToAnkleFrameTransform(RobotSide robotSide);
 }

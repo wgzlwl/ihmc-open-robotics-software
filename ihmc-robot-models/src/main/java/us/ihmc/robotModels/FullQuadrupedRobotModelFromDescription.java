@@ -188,4 +188,10 @@ public class FullQuadrupedRobotModelFromDescription extends FullRobotModelFromDe
    {
       return legJointLists.get(robotQuadrant);
    }
+
+   @Override
+   public RobotQuadrant[] getRobotSegments()
+   {
+      return RobotQuadrant.values;
+   }
 }

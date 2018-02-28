@@ -516,5 +516,11 @@ public class FullRobotModelTestTools
          }
 
       }
+
+      @Override
+      public RobotSide[] getRobotSegments()
+      {
+         return RobotSide.values;
+      }
    }
 }

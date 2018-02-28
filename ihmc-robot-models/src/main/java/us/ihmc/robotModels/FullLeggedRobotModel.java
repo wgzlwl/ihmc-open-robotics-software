@@ -62,4 +62,6 @@ public interface FullLeggedRobotModel<E extends Enum<E> & RobotSegment<E>> exten
    MovingReferenceFrame getSoleFrame(E robotSegment);
 
    SegmentDependentList<E, MovingReferenceFrame> getSoleFrames();
+
+   E[] getRobotSegments();
 }
