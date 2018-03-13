@@ -7,7 +7,6 @@ import org.junit.Test;
 import us.ihmc.quadrupedRobotics.*;
 import us.ihmc.quadrupedRobotics.controller.QuadrupedControlMode;
 import us.ihmc.quadrupedRobotics.simulation.QuadrupedGroundContactModelType;
-import us.ihmc.robotics.dataStructures.parameter.ParameterRegistry;
 import us.ihmc.robotics.testing.YoVariableTestGoal;
 import us.ihmc.simulationConstructionSetTools.util.simulationrunner.GoalOrientedTestConductor;
 import us.ihmc.simulationconstructionset.util.InclinedGroundProfile;
@@ -27,9 +26,7 @@ public abstract class QuadrupedXGaitTurnTestWithSlope implements QuadrupedMultiR
 
       try
       {
-         ParameterRegistry.destroyAndRecreateInstance();
          InclinedGroundProfile groundProfile = new InclinedGroundProfile(0.1);
-
          QuadrupedTestFactory quadrupedTestFactory = createQuadrupedTestFactory();
          quadrupedTestFactory.setGroundProfile3D(groundProfile);
          quadrupedTestFactory.setControlMode(QuadrupedControlMode.FORCE);
