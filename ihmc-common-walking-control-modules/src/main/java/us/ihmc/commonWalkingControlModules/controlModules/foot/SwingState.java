@@ -145,6 +145,8 @@ public class SwingState extends AbstractFootControlState
    private final YoFramePoseUsingQuaternions adjustedFootstepPose;
    private final RateLimitedYoFramePose rateLimitedAdjustedPose;
 
+   private final FramePose3D tempPose = new FramePose3D();
+
    private final FramePose3D footstepPose = new FramePose3D();
    private final FramePose3D lastFootstepPose = new FramePose3D();
 
@@ -589,8 +591,6 @@ public class SwingState extends AbstractFootControlState
       return computeSwingTimeRemaining(currentTime.getDoubleValue());
    }
 
-   FramePose3D tempPose = new FramePose3D();
-
    public void setAdjustedFootstepAndTime(Footstep adjustedFootstep, double swingTime)
    {
       replanTrajectory.set(true);
@@ -675,11 +675,6 @@ public class SwingState extends AbstractFootControlState
          blendedSwingTrajectory.appendOrientationWaypoint(swingDuration, finalOrientation, finalAngularVelocity);
       }
 
-      // setup touchdown trajectory
-      // TODO: revisit the touchdown velocity and accelerations
-      touchdownTrajectory.setLinearTrajectory(swingDuration, finalPosition, finalLinearVelocity, touchdownAcceleration);
-      touchdownTrajectory.setOrientation(finalOrientation);
-
       blendedSwingTrajectory.initializeTrajectory();
 
       blendedSwingTrajectory.clear();
@@ -690,6 +685,11 @@ public class SwingState extends AbstractFootControlState
       }
 
       blendedSwingTrajectory.initialize();
+
+      // TODO: revisit the touchdown velocity and accelerations
+      // setup touchdown trajectory
+      touchdownTrajectory.setLinearTrajectory(swingDuration, finalPosition, finalLinearVelocity, touchdownAcceleration);
+      touchdownTrajectory.setOrientation(finalOrientation);
       touchdownTrajectory.initialize();
    }
 
@@ -700,11 +700,11 @@ public class SwingState extends AbstractFootControlState
 
       touchdownTrajectory.setLinearTrajectory(swingDuration, rateLimitedAdjustedPose.getPosition(), finalLinearVelocity, touchdownAcceleration);
       touchdownTrajectory.setOrientation(rateLimitedAdjustedPose.getOrientation());
-
-      blendedSwingTrajectory.blendFinalConstraint(rateLimitedAdjustedPose, swingDuration, swingDuration);
-
-      blendedSwingTrajectory.initialize();
       touchdownTrajectory.initialize();
+
+      blendedSwingTrajectory.clearFinalConstraint();
+      blendedSwingTrajectory.blendFinalConstraint(rateLimitedAdjustedPose, swingDuration, swingDuration);
+      blendedSwingTrajectory.initialize();
    }
 
    private void modifyFinalOrientationForTouchdown(FrameQuaternion finalOrientationToPack)
