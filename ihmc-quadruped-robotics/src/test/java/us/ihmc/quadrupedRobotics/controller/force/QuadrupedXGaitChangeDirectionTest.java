@@ -5,12 +5,16 @@ import junit.framework.AssertionFailedError;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import us.ihmc.euclid.Axis;
 import us.ihmc.euclid.geometry.BoundingBox2D;
+import us.ihmc.euclid.geometry.Line2D;
 import us.ihmc.euclid.tuple2D.Point2D;
 import us.ihmc.euclid.tuple2D.Vector2D;
+import us.ihmc.graphicsDescription.Graphics3DObject;
 import us.ihmc.quadrupedRobotics.*;
 import us.ihmc.quadrupedRobotics.controller.QuadrupedControlMode;
 import us.ihmc.quadrupedRobotics.simulation.QuadrupedGroundContactModelType;
+import us.ihmc.robotics.geometry.RigidBodyTransformGenerator;
 import us.ihmc.robotics.testing.YoVariableTestGoal;
 import us.ihmc.simulationConstructionSetTools.util.simulationrunner.GoalOrientedTestConductor;
 import us.ihmc.simulationconstructionset.util.InclinedGroundProfile;
@@ -43,6 +47,11 @@ public abstract class QuadrupedXGaitChangeDirectionTest implements QuadrupedMult
       {
          throw new RuntimeException("Error loading simulation: " + e.getMessage());
       }
+      /*
+      Graphics3DObject staticLinkGraphics = new Graphics3DObject();
+      staticLinkGraphics.addCoordinateSystem(0.1);
+      conductor.getScs().addStaticLinkGraphics(staticLinkGraphics);
+      */
    }
 
    @After
@@ -222,9 +231,11 @@ public abstract class QuadrupedXGaitChangeDirectionTest implements QuadrupedMult
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
       conductor.addTimeLimit(variables.getYoTime(), 5.0);
 
-      Vector2D plusMinusVector = new Vector2D(0.05, 0.05);
-      BoundingBox2D boundingBox = BoundingBox2D.createUsingCenterAndPlusMinusVector(terminalGoals.get(0), plusMinusVector);
-      conductor.addTerminalGoal(YoVariableTestGoal.pointIn2DBoundingBox(variables.getRobotBodyX(), variables.getRobotBodyY(), boundingBox));
+      RigidBodyTransformGenerator transformGenerator = new RigidBodyTransformGenerator();
+      transformGenerator.rotate(0.5*Math.PI, Axis.Z);
+      velocities.get(0).applyTransform(transformGenerator.getRigidBodyTransformCopy());
+      Line2D perpendicularLine = new Line2D(terminalGoals.get(0),velocities.get(0));
+      conductor.addTerminalGoal(YoVariableTestGoal.nearLine(variables.getRobotBodyX(),variables.getRobotBodyY(), perpendicularLine, 0.05));
       conductor.simulate();
 
       variables.getYoPlanarVelocityInputX().set(0.0);
@@ -232,9 +243,9 @@ public abstract class QuadrupedXGaitChangeDirectionTest implements QuadrupedMult
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
       conductor.addTimeLimit(variables.getYoTime(), 5.0);
 
-      Vector2D plusMinusVector1 = new Vector2D(0.4, 0.4);
-      BoundingBox2D boundingBox1 = BoundingBox2D.createUsingCenterAndPlusMinusVector(terminalGoals.get(1), plusMinusVector1);
-      conductor.addTerminalGoal(YoVariableTestGoal.pointIn2DBoundingBox(variables.getRobotBodyX(), variables.getRobotBodyY(), boundingBox1));
+      velocities.get(1).applyTransform(transformGenerator.getRigidBodyTransformCopy());
+      Line2D perpendicularLine1 = new Line2D(terminalGoals.get(1), velocities.get(1));
+      conductor.addTerminalGoal(YoVariableTestGoal.nearLine(variables.getRobotBodyX(),variables.getRobotBodyY(), perpendicularLine1, 0.05));
       conductor.simulate();
    }
 

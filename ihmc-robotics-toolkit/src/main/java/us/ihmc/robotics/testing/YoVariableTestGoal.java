@@ -1,9 +1,16 @@
 package us.ihmc.robotics.testing;
 
+import sun.nio.cs.Surrogate;
 import us.ihmc.commons.MathTools;
+import us.ihmc.euclid.Axis;
+import us.ihmc.euclid.axisAngle.interfaces.AxisAngleReadOnly;
 import us.ihmc.euclid.geometry.BoundingBox2D;
 import us.ihmc.euclid.geometry.BoundingBox3D;
+import us.ihmc.euclid.geometry.Line2D;
+import us.ihmc.euclid.transform.RigidBodyTransform;
 import us.ihmc.euclid.tuple2D.Point2D;
+import us.ihmc.euclid.tuple2D.Vector2D;
+import us.ihmc.robotics.geometry.RigidBodyTransformGenerator;
 import us.ihmc.yoVariables.listener.VariableChangedListener;
 import us.ihmc.yoVariables.variable.YoBoolean;
 import us.ihmc.yoVariables.variable.YoDouble;
@@ -150,6 +157,28 @@ public abstract class YoVariableTestGoal implements VariableChangedListener
             Point2D centerToPack = new Point2D();
             boundingBox.getCenterPoint(centerToPack);
             return xString + " and " + yString + " in bounding box at (" + centerToPack.getX() +", " + centerToPack.getY()+ ")." ;
+         }
+      };
+   }
+
+   public static YoVariableTestGoal nearLine(final YoDouble xPosition, final YoDouble yPosition, Line2D line, double offset)
+   {
+      return new YoVariableTestGoal()
+      {
+         @Override
+         public boolean currentlyMeetsGoal()
+         {
+            Point2D position = new Point2D(xPosition.getDoubleValue(),yPosition.getDoubleValue());
+            return (line.distance(position) < offset);
+         }
+
+         @Override
+         public String toString()
+         {
+            String xString = getFormattedDoubleYoVariable(xPosition);
+            String yString = getFormattedDoubleYoVariable(yPosition);
+            return xString + " and " + yString + " near line " +line.getPoint().getX() + " , " + line.getPoint().getY() +" , " +
+                  line.getDirection().getX() + " , " + line.getDirection().getY() ;
          }
       };
    }
