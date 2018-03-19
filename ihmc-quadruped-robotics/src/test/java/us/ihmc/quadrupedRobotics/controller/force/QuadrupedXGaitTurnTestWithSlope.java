@@ -4,15 +4,17 @@ import junit.framework.AssertionFailedError;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import us.ihmc.euclid.tuple2D.Vector2D;
 import us.ihmc.quadrupedRobotics.*;
 import us.ihmc.quadrupedRobotics.controller.QuadrupedControlMode;
-import us.ihmc.quadrupedRobotics.simulation.QuadrupedGroundContactModelType;
 import us.ihmc.robotics.testing.YoVariableTestGoal;
 import us.ihmc.simulationConstructionSetTools.util.simulationrunner.GoalOrientedTestConductor;
 import us.ihmc.simulationconstructionset.util.InclinedGroundProfile;
 import us.ihmc.tools.MemoryTools;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class QuadrupedXGaitTurnTestWithSlope implements QuadrupedMultiRobotTestInterface
 {
@@ -51,117 +53,243 @@ public abstract class QuadrupedXGaitTurnTestWithSlope implements QuadrupedMultiR
    }
 
    @Test
-   public void testTrottingDiagonallyForwardLeftWithSlope()throws IOException { trottingDiagonally(1,0.3, 180.0);}
-
-   @Test
-   public void testTrottingDiagonallyBackwardLeftWithSlope()throws IOException { trottingDiagonally(-1,0.3, 180.0);}
-
-   @Test
-   public void testTrottingDiagonallyForwardRightWithSlope() throws IOException{ trottingDiagonally(1,-0.3, 180.0);}
-
-   @Test
-   public void testTrottingDiagonallyBackwardRightWithSlope()throws IOException { trottingDiagonally(-1,-0.3, 180.0);}
-
-
-   private void trottingDiagonally(double directionX, double directionY, double endPhaseShiftInput) throws IOException,AssertionFailedError
+   public void testTrottingDiagonallyForwardLeftWithSlope()
    {
 
+      Vector2D direction = new Vector2D(1.0, 0.3);
 
-      variables.getXGaitEndDoubleSupportDurationInput().set(0.05);
-      variables.getXGaitStanceLengthInput().set(1.00);
-      variables.getXGaitStanceWidthInput().set(0.30);
-      variables.getXGaitStepDurationInput().set(0.35);
-      variables.getXGaitStepGroundClearanceInput().set(0.1);
-      variables.getYoComPositionInputZ().set(0.575);
+      trottingDiagonally( direction , 2,0.0,0.5);
+   }
+
+   @Test
+   public void testTrottingDiagonallyBackwardLeftWithSlope()
+   {
+      Vector2D direction = new Vector2D(-1.0, 0.3);
+      trottingDiagonally( direction ,2, 0.0,0.5);
+   }
+
+   @Test
+   public void testTrottingDiagonallyForwardRightWithSlope()
+   {
+      Vector2D direction = new Vector2D(1.0, -0.3);
+      trottingDiagonally( direction , 2,0.0,0.5);
+   }
+
+   @Test
+   public void testTrottingDiagonallyBackwardRightWithSlope()
+   {
+      Vector2D direction = new Vector2D(-1.0, -0.3);
+      trottingDiagonally( direction , 2,0.0,0.5);
+   }
+
+
+   @Test
+   public void testPacingDiagonallyForwardLeftWithSlope()
+   {
+      Vector2D direction = new Vector2D(1.0, 0.3);
+      trottingDiagonally(direction,2, 180.0,0.5);
+   }
+
+   @Test
+   public void testPacingDiagonallyBackwardLeftWithSlope()
+   {
+      Vector2D direction = new Vector2D(-1.0, 0.3);
+      trottingDiagonally(direction,2, 180.0,0.5);
+   }
+
+   @Test
+   public void testPacingDiagonallyForwardRightWithSlope()
+   {
+      Vector2D direction = new Vector2D(1.0, -0.3);
+      trottingDiagonally(direction,2, 180.0,0.5);
+   }
+
+   @Test
+   public void testPacingDiagonallyBackwardRightWithSlope()
+   {
+      Vector2D direction = new Vector2D(-1.0, -0.3);
+      trottingDiagonally(direction,2, 180.0,0.5);
+   }
+
+
+   private void trottingDiagonally(Vector2D direction, double terminalGoalX, double endPhaseShiftInput, double dropHeightForSlope) throws AssertionFailedError
+   {
+      variables.getYoComPositionInputZ().set(dropHeightForSlope);
+
       QuadrupedTestBehaviors.readyXGait(conductor, variables);
       variables.getXGaitEndPhaseShiftInput().set(endPhaseShiftInput);
       QuadrupedTestBehaviors.enterXGait(conductor, variables);
 
-      variables.getYoPlanarVelocityInputX().set(directionX);
-      variables.getYoPlanarVelocityInputY().set(directionY);
+      variables.setYoPlanarVelocityInput(direction);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
-      conductor.addTimeLimit(variables.getYoTime(), 8.0);
-      if(directionX < 0)
+      conductor.addTimeLimit(variables.getYoTime(), 5.0);
+      if(direction.getX() < 0)
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyX(), directionX*2 ));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyX(), terminalGoalX));
       }
       else
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyX(), directionX*2 ));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyX(), terminalGoalX ));
       }
       conductor.simulate();
    }
 
    @Test
-   public void testTrottingForwardThenTurnLeftWithSlope() throws IOException { gaitThenTurn(1, 1, 180.0);}
-
-   @Test
-   public void testTrottingBackwardThenTurnLeftWithSlope() throws IOException { gaitThenTurn(-1, 1, 180.0);}
-
-   @Test
-   public void testTrottingForwardThenTurnRightWithSlope() throws IOException { gaitThenTurn(1, -1, 180.0);}
-
-   @Test
-   public void testTrottingBackwardThenTurnRightWithSlope()throws IOException { gaitThenTurn(-1, -1, 180.0);}
-
-
-   private void gaitThenTurn(double directionX, double directionY, double endPhaseShiftInput) throws IOException, AssertionFailedError
+   public void testTrottingForwardThenTurnLeftWithSlope()
    {
+      List<Vector2D> directions = new ArrayList<>();
+      directions.add(new Vector2D(1.0,0.0));
+      directions.add(new Vector2D(0.0,1.0));
+      double turnSign = Math.signum(directions.get(0).getX() *directions.get(1).getY());
+      List<Vector2D> terminalGoals = new ArrayList<>();
+      terminalGoals.add(new Vector2D(1.0,0.0));
+      terminalGoals.add(new Vector2D(0.0,1.0));
+      gaitThenTurn(directions, terminalGoals, 180.0, turnSign,0.5);
+   }
 
-      variables.getXGaitEndDoubleSupportDurationInput().set(0.05);
-      variables.getXGaitStanceLengthInput().set(1.00);
-      variables.getXGaitStanceWidthInput().set(0.30);
-      variables.getXGaitStepDurationInput().set(0.35);
-      variables.getXGaitStepGroundClearanceInput().set(0.1);
-      variables.getYoComPositionInputZ().set(0.575);
+   @Test
+   public void testTrottingBackwardThenTurnLeftWithSlope()
+   {
+      List<Vector2D> directions = new ArrayList<>();
+      directions.add(new Vector2D(-1.0,0.0));
+      directions.add(new Vector2D(0.0,1.0));
+      double turnSign = Math.signum(directions.get(0).getX() *directions.get(1).getY());
+      List<Vector2D> terminalGoals = new ArrayList<>();
+      terminalGoals.add(new Vector2D(-1.0,0.0));
+      terminalGoals.add(new Vector2D(0.0,1.0));
+      gaitThenTurn(directions, terminalGoals, 180.0, turnSign,0.5);
+   }
+
+   @Test
+   public void testTrottingForwardThenTurnRightWithSlope()
+   {
+      List<Vector2D> directions = new ArrayList<>();
+      directions.add(new Vector2D(1.0,0.0));
+      directions.add(new Vector2D(0.0,-1.0));
+      double turnSign = Math.signum(directions.get(0).getX() *directions.get(1).getY());
+      List<Vector2D> terminalGoals = new ArrayList<>();
+      terminalGoals.add(new Vector2D(1.0,0.0));
+      terminalGoals.add(new Vector2D(0.0,-1.0));
+      gaitThenTurn(directions, terminalGoals, 180.0, turnSign,0.5);
+   }
+
+   @Test
+   public void testTrottingBackwardThenTurnRightWithSlope()
+   {
+      List<Vector2D> directions = new ArrayList<>();
+      directions.add(new Vector2D(-1.0,0.0));
+      directions.add(new Vector2D(0.0,-1.0));
+      double turnSign = Math.signum(directions.get(0).getX() *directions.get(1).getY());
+      List<Vector2D> terminalGoals = new ArrayList<>();
+      terminalGoals.add(new Vector2D(-1.0,0.0));
+      terminalGoals.add(new Vector2D(0.0,-1.0));
+      gaitThenTurn(directions, terminalGoals, 180.0, turnSign,0.5);
+   }
+
+
+   @Test
+   public void testPacingForwardThenTurnLeftWithSlope()
+   {
+      List<Vector2D> directions = new ArrayList<>();
+      directions.add(new Vector2D(1.0,0.0));
+      directions.add(new Vector2D(0.0,1.0));
+      double turnSign = Math.signum(directions.get(0).getX() *directions.get(1).getY());
+      List<Vector2D> terminalGoals = new ArrayList<>();
+      terminalGoals.add(new Vector2D(1.0,0.0));
+      terminalGoals.add(new Vector2D(0.0,1.0));
+      gaitThenTurn(directions, terminalGoals, 0.0, turnSign,0.5);
+   }
+
+   @Test
+   public void testPacingBackwardThenTurnLeftWithSlope()
+   {
+      List<Vector2D> directions = new ArrayList<>();
+      directions.add(new Vector2D(-1.0,0.0));
+      directions.add(new Vector2D(0.0,1.0));
+      double turnSign = Math.signum(directions.get(0).getX() *directions.get(1).getY());
+      List<Vector2D> terminalGoals = new ArrayList<>();
+      terminalGoals.add(new Vector2D(-1.0,0.0));
+      terminalGoals.add(new Vector2D(0.0,1.0));
+      gaitThenTurn(directions, terminalGoals, 0.0, turnSign,0.5);
+   }
+
+   @Test
+   public void testPacingForwardThenTurnRightWithSlope()
+   {
+      List<Vector2D> directions = new ArrayList<>();
+      directions.add(new Vector2D(1.0,0.0));
+      directions.add(new Vector2D(0.0,-1.0));
+      double turnSign = Math.signum(directions.get(0).getX() *directions.get(1).getY());
+      List<Vector2D> terminalGoals = new ArrayList<>();
+      terminalGoals.add(new Vector2D(1.0,0.0));
+      terminalGoals.add(new Vector2D(0.0,-1.0));
+      gaitThenTurn(directions, terminalGoals, 0.0, turnSign,0.5);
+   }
+
+   @Test
+   public void testPacingBackwardThenTurnRightWithSlope()
+   {
+      List<Vector2D> directions = new ArrayList<>();
+      directions.add(new Vector2D(-1.0,0.0));
+      directions.add(new Vector2D(0.0,-1.0));
+      double turnSign = Math.signum(directions.get(0).getX() *directions.get(1).getY());
+      List<Vector2D> terminalGoals = new ArrayList<>();
+      terminalGoals.add(new Vector2D(-1.0,0.0));
+      terminalGoals.add(new Vector2D(0.0,-1.0));
+      gaitThenTurn(directions, terminalGoals, 0.0, turnSign,0.5);
+   }
+
+
+   private void gaitThenTurn(List<Vector2D> directions, List<Vector2D> terminalGoals, double endPhaseShiftInput, double turnSign, double dropHeightForSlope) throws  AssertionFailedError
+   {
+      variables.getYoComPositionInputZ().set(dropHeightForSlope);
 
       QuadrupedTestBehaviors.readyXGait(conductor, variables);
       variables.getXGaitEndPhaseShiftInput().set(endPhaseShiftInput);
       QuadrupedTestBehaviors.enterXGait(conductor, variables);
 
 
-      variables.getYoPlanarVelocityInputX().set(directionX * 1.0);
+      variables.setYoPlanarVelocityInput(directions.get(0));
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
-      conductor.addTimeLimit(variables.getYoTime(), 8.0);
-      if(directionX < 0)
+      conductor.addTimeLimit(variables.getYoTime(), 4.0);
+
+      if(directions.get(0).getX() < 0)
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyX(), directionX ));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyX(), terminalGoals.get(0).getX()));
       }
       else
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyX(), directionX ));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyX(), terminalGoals.get(0).getX() ));
       }
       conductor.simulate();
 
       variables.getYoPlanarVelocityInputX().set(0.0);
-
-      variables.getYoPlanarVelocityInputZ().set(directionX*directionY*0.4);
+      variables.getYoPlanarVelocityInputZ().set(turnSign*0.4);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
-      conductor.addTimeLimit(variables.getYoTime(), 8.0);
+      conductor.addTimeLimit(variables.getYoTime(), 5.0);
 
-      if(directionX *directionY< 0)
+      if(turnSign< 0)
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyYaw(), directionX*directionY *0.5* Math.PI));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyYaw(), turnSign*0.5* Math.PI));
       }
       else
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyYaw(), directionX*directionY*0.5* Math.PI));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyYaw(), turnSign*0.5* Math.PI));
       }
       conductor.simulate();
 
       variables.getYoPlanarVelocityInputZ().set(0.0);
-      variables.getXGaitEndPhaseShiftInput().set(endPhaseShiftInput);
-      variables.getYoPlanarVelocityInputX().set(directionX*1.0);
+      variables.getYoPlanarVelocityInputX().set(directions.get(0).getX());
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
-      conductor.addTimeLimit(variables.getYoTime(), 8.0);
+      conductor.addTimeLimit(variables.getYoTime(), 4.0);
 
-      if(directionY < 0)
+      if(directions.get(1).getY() < 0)
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyY(), directionY ));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyY(), terminalGoals.get(1).getY() ));
       }
       else
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyY(), directionY ));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyY(), terminalGoals.get(1).getY() ));
       }
       conductor.simulate();
    }

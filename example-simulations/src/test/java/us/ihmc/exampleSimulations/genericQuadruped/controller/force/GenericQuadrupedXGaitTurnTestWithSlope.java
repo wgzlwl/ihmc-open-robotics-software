@@ -17,60 +17,61 @@ public class GenericQuadrupedXGaitTurnTestWithSlope extends QuadrupedXGaitTurnTe
       return new GenericQuadrupedTestFactory();
    }
 
-   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 40.0, categoriesOverride = IntegrationCategory.IN_DEVELOPMENT)
-   @Test(timeout = 1200000)
-   public void testTrottingForwardThenTurnLeftWithSlope() throws IOException
+
+   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 30.0)
+   @Test(timeout = 200000)
+   public void testTrottingForwardThenTurnLeftWithSlope()
    {
       super.testTrottingForwardThenTurnLeftWithSlope();
    }
 
-   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 40.0, categoriesOverride = IntegrationCategory.IN_DEVELOPMENT)
-   @Test(timeout = 1200000)
-   public void testTrottingBackwardThenTurnLeftWithSlope()throws IOException
+   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 30.0)
+   @Test(timeout = 200000)
+   public void testTrottingBackwardThenTurnLeftWithSlope()
    {
       super.testTrottingBackwardThenTurnLeftWithSlope();
    }
 
-   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 40.0, categoriesOverride = IntegrationCategory.IN_DEVELOPMENT)
-   @Test(timeout = 1200000)
-   public void testTrottingForwardThenTurnRightWithSlope()throws IOException
+   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 30.0)
+   @Test(timeout = 200000)
+   public void testTrottingForwardThenTurnRightWithSlope()
    {
       super.testTrottingForwardThenTurnRightWithSlope();
    }
 
-   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 40.0, categoriesOverride = IntegrationCategory.IN_DEVELOPMENT)
-   @Test(timeout = 1200000)
-   public void testTrottingBackwardThenTurnRightWithSlope()throws IOException
+   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 30.0)
+   @Test(timeout = 200000)
+   public void testTrottingBackwardThenTurnRightWithSlope()
    {
       super.testTrottingBackwardThenTurnRightWithSlope();
    }
 
 
 
-   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 40.0, categoriesOverride = IntegrationCategory.IN_DEVELOPMENT)
-   @Test(timeout = 1200000)
-   public void testTrottingDiagonallyForwardLeftWithSlope()throws IOException
+   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 30.0)
+   @Test(timeout = 200000)
+   public void testTrottingDiagonallyForwardLeftWithSlope()
    {
       super.testTrottingDiagonallyForwardLeftWithSlope();
    }
 
-   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 40.0, categoriesOverride = IntegrationCategory.IN_DEVELOPMENT)
-   @Test(timeout = 1200000)
-   public void testTrottingDiagonallyBackwardLeftWithSlope()throws IOException
+   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 30.0)
+   @Test(timeout = 200000)
+   public void testTrottingDiagonallyBackwardLeftWithSlope()
    {
       super.testTrottingDiagonallyBackwardLeftWithSlope();
    }
 
-   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 40.0, categoriesOverride = IntegrationCategory.IN_DEVELOPMENT)
-   @Test(timeout = 1200000)
-   public void testTrottingDiagonallyForwardRightWithSlope()throws IOException
+   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 30.0)
+   @Test(timeout = 200000)
+   public void testTrottingDiagonallyForwardRightWithSlope()
    {
       super.testTrottingDiagonallyForwardRightWithSlope();
    }
 
-   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 40.0, categoriesOverride = IntegrationCategory.IN_DEVELOPMENT)
-   @Test(timeout = 1200000)
-   public void testTrottingDiagonallyBackwardRightWithSlope()throws IOException
+   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 30.0)
+   @Test(timeout = 200000)
+   public void testTrottingDiagonallyBackwardRightWithSlope()
    {
       super.testTrottingDiagonallyBackwardRightWithSlope();
    }

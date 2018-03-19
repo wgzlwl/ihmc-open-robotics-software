@@ -15,29 +15,29 @@ public class GenericQuadrupedXGaitChangeDirectionTrotTest extends QuadrupedXGait
       return new GenericQuadrupedTestFactory();
    }
 
-   @ContinuousIntegrationTest(estimatedDuration = 40.0, categoriesOverride = IntegrationCategory.IN_DEVELOPMENT)
-   @Test(timeout = 1200000)
+   @ContinuousIntegrationTest(estimatedDuration = 20.0)
+   @Test(timeout = 150000)
    public void testTrottingForwardThenChangeToLeft()
    {
       super.testTrottingForwardThenChangeToLeft();
    }
 
-   @ContinuousIntegrationTest(estimatedDuration = 40.0, categoriesOverride = IntegrationCategory.IN_DEVELOPMENT)
-   @Test(timeout = 1200000)
+   @ContinuousIntegrationTest(estimatedDuration = 20.0)
+   @Test(timeout = 150000)
    public void testTrottingBackwardThenChangeToLeft()
    {
       super.testTrottingBackwardThenChangeToLeft();
    }
 
-   @ContinuousIntegrationTest(estimatedDuration = 40.0, categoriesOverride = IntegrationCategory.IN_DEVELOPMENT)
-   @Test(timeout = 1200000)
+   @ContinuousIntegrationTest(estimatedDuration = 20.0)
+   @Test(timeout = 150000)
    public void testTrottingForwardThenChangeToRight()
    {
       super.testTrottingForwardThenChangeToRight();
    }
 
-   @ContinuousIntegrationTest(estimatedDuration = 40.0, categoriesOverride = IntegrationCategory.IN_DEVELOPMENT)
-   @Test(timeout = 1200000)
+   @ContinuousIntegrationTest(estimatedDuration = 20.0)
+   @Test(timeout = 150000)
    public void testTrottingBackwardThenChangeToRight()
    {
       super.testTrottingBackwardThenChangeToRight();

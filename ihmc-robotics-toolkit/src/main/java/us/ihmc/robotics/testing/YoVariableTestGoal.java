@@ -1,6 +1,9 @@
 package us.ihmc.robotics.testing;
 
 import us.ihmc.commons.MathTools;
+import us.ihmc.euclid.geometry.BoundingBox2D;
+import us.ihmc.euclid.geometry.BoundingBox3D;
+import us.ihmc.euclid.tuple2D.Point2D;
 import us.ihmc.yoVariables.listener.VariableChangedListener;
 import us.ihmc.yoVariables.variable.YoBoolean;
 import us.ihmc.yoVariables.variable.YoDouble;
@@ -125,6 +128,28 @@ public abstract class YoVariableTestGoal implements VariableChangedListener
             String subtrahendString = getFormattedDoubleYoVariable(subtrahend);
             String differenceString = FormattingTools.getFormattedToSignificantFigures(difference, SIGNIFICANT_FIGURES_FOR_PRINT_OUT);
             return minuendString + " - " + subtrahendString + " > " + differenceString;
+         }
+      };
+   }
+
+   public static YoVariableTestGoal pointIn2DBoundingBox(final YoDouble xPosition, final YoDouble yPosition, BoundingBox2D boundingBox)
+   {
+      return new YoVariableTestGoal()
+      {
+         @Override
+         public boolean currentlyMeetsGoal()
+         {
+            return boundingBox.isInsideInclusive(xPosition.getDoubleValue(), yPosition.getDoubleValue());
+         }
+
+         @Override
+         public String toString()
+         {
+            String xString = getFormattedDoubleYoVariable(xPosition);
+            String yString = getFormattedDoubleYoVariable(yPosition);
+            Point2D centerToPack = new Point2D();
+            boundingBox.getCenterPoint(centerToPack);
+            return xString + " and " + yString + " in bounding box at (" + centerToPack.getX() +", " + centerToPack.getY()+ ")." ;
          }
       };
    }

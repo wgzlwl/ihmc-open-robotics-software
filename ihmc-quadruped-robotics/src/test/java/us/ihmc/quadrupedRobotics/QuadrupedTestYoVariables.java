@@ -1,5 +1,6 @@
 package us.ihmc.quadrupedRobotics;
 
+import us.ihmc.euclid.tuple2D.Vector2D;
 import us.ihmc.yoVariables.variable.YoBoolean;
 import us.ihmc.yoVariables.variable.YoDouble;
 import us.ihmc.robotics.robotSide.QuadrantDependentList;
@@ -204,5 +205,11 @@ public abstract class QuadrupedTestYoVariables
    public YoBoolean getLimitJointTorques()
    {
       return limitJointTorques;
+   }
+
+   public void setYoPlanarVelocityInput(Vector2D direction)
+   {
+      getYoPlanarVelocityInputX().set(direction.getX());
+      getYoPlanarVelocityInputY().set(direction.getY());
    }
 }

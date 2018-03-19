@@ -55,13 +55,76 @@ public abstract class QuadrupedXGaitBumpyGroundTrackTest implements QuadrupedMul
 
 
    @Test
-   public void testBumpyGroundTrottingForwardTrack() { gaitBumpyGroundTrack(1, 1, 180.0);}
+   public void testBumpyGroundTrottingForwardTrack()
+   {
+      gaitBumpyGroundTrack(1, 1, 180.0);
+   }
 
    @Test
-   public void testBumpyGroundWalkingForwardTrack() { gaitBumpyGroundTrack(1, 1, 90.0);}
+   public void testBumpyGroundWalkingForwardTrack()
+   {
+      gaitBumpyGroundTrack(1, 1, 90.0);
+   }
 
    @Test
-   public void testBumpyGroundPacingForwardTrack() { gaitBumpyGroundTrack(1, 1, 0.0);}
+   public void testBumpyGroundPacingForwardTrack()
+   {
+      gaitBumpyGroundTrack(1, 1, 0.0);
+   }
+
+   @Test
+   public void testBumpyGroundTrottingForwardOtherTrack()
+   {
+      gaitBumpyGroundTrack(1, -1, 180.0);
+   }
+
+   @Test
+   public void testBumpyGroundWalkingForwardOtherTrack()
+   {
+      gaitBumpyGroundTrack(1, -1, 90.0);
+   }
+
+   @Test
+   public void testBumpyGroundPacingForwardOtherTrack()
+   {
+      gaitBumpyGroundTrack(1, -1, 0.0);
+   }
+
+   @Test
+   public void testBumpyGroundTrottingBackwardTrack()
+   {
+      gaitBumpyGroundTrack(-1, 1, 180.0);
+   }
+
+   @Test
+   public void testBumpyGroundWalkingBackwardTrack()
+   {
+      gaitBumpyGroundTrack(-1, 1, 90.0);
+   }
+
+   @Test
+   public void testBumpyGroundPacingBackwardTrack()
+   {
+      gaitBumpyGroundTrack(-1, 1, 0.0);
+   }
+
+   @Test
+   public void testBumpyGroundTrottingBackwardOtherTrack()
+   {
+      gaitBumpyGroundTrack(-1, -1, 180.0);
+   }
+
+   @Test
+   public void testBumpyGroundWalkingBackwardOtherTrack()
+   {
+      gaitBumpyGroundTrack(-1, -1, 90.0);
+   }
+
+   @Test
+   public void testBumpyGroundPacingBackwardOtherTrack()
+   {
+      gaitBumpyGroundTrack(-1, -1, 0.0);
+   }
 
 
    private void gaitBumpyGroundTrack(double directionX, double directionY, double endPhaseShiftInput) throws  AssertionFailedError
@@ -74,7 +137,7 @@ public abstract class QuadrupedXGaitBumpyGroundTrackTest implements QuadrupedMul
       variables.getYoPlanarVelocityInputX().set(directionX * 1.0);
       variables.getYoPlanarVelocityInputZ().set(directionX*directionY*0.15);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
-      conductor.addTimeLimit(variables.getYoTime(), 15.0);
+      conductor.addTimeLimit(variables.getYoTime(), 8.0);
       if(directionX *directionY< 0)
       {
          conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyYaw(), directionX*directionY *0.25* Math.PI));
@@ -91,7 +154,7 @@ public abstract class QuadrupedXGaitBumpyGroundTrackTest implements QuadrupedMul
 
       variables.getYoPlanarVelocityInputY().set(directionY*0.3);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
-      conductor.addTimeLimit(variables.getYoTime(), 15.0);
+      conductor.addTimeLimit(variables.getYoTime(), 8.0);
       if(directionY< 0)
       {
          conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyY(), directionY*3));
@@ -105,7 +168,7 @@ public abstract class QuadrupedXGaitBumpyGroundTrackTest implements QuadrupedMul
       variables.getYoPlanarVelocityInputY().set(0.0);
       variables.getYoPlanarVelocityInputX().set(directionX * -1.0);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
-      conductor.addTimeLimit(variables.getYoTime(), 15.0);
+      conductor.addTimeLimit(variables.getYoTime(), 8.0);
       if(directionX < 0)
       {
          conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyY(), directionY*2));
@@ -119,7 +182,8 @@ public abstract class QuadrupedXGaitBumpyGroundTrackTest implements QuadrupedMul
       variables.getYoPlanarVelocityInputX().set(0.0);
       variables.getYoPlanarVelocityInputZ().set(directionX*directionY*0.3);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
-      conductor.addTimeLimit(variables.getYoTime(), 15.0);
+      conductor.addTimeLimit(variables.getYoTime(), 8.0);
+
       if(directionX *directionY< 0)
       {
          conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyYaw(), directionX*directionY *0.5* Math.PI));
@@ -133,7 +197,8 @@ public abstract class QuadrupedXGaitBumpyGroundTrackTest implements QuadrupedMul
       variables.getYoPlanarVelocityInputZ().set(0.0);
       variables.getYoPlanarVelocityInputX().set(directionX * 1.0);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
-      conductor.addTimeLimit(variables.getYoTime(), 15.0);
+      conductor.addTimeLimit(variables.getYoTime(), 8.0);
+
       if(directionX < 0)
       {
          conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyY(), directionY*4));
