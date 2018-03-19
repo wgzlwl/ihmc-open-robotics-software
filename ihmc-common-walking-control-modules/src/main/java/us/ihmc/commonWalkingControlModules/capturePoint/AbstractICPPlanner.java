@@ -36,7 +36,7 @@ public abstract class AbstractICPPlanner implements ICPPlannerInterface
 
    protected final YoInteger numberFootstepsToConsider = new YoInteger(namePrefix + "NumberFootstepsToConsider", registry);
    protected final YoBoolean isStanding = new YoBoolean(namePrefix + "IsStanding", registry);
-   protected final YoBoolean isInitialTransfer = new YoBoolean(namePrefix + "IsInitialTransfer", registry);
+   protected final YoBoolean isInitialPhase = new YoBoolean(namePrefix + "IsInitialPhase", registry);
    protected final YoBoolean isDoubleSupport = new YoBoolean(namePrefix + "IsDoubleSupport", registry);
 
    protected final ExecutionTimer timer = new ExecutionTimer(namePrefix + "Timer", registry);
@@ -247,11 +247,11 @@ public abstract class AbstractICPPlanner implements ICPPlannerInterface
       {
          if (isHoldingPosition.getBooleanValue())
             requestedHoldPosition.set(true);
-         updateTransferPlan(false);
+         updateTransferPlan(true);
       }
       else
       {
-         updateSingleSupportPlan(false);
+         updateSingleSupportPlan(true);
       }
    }
 
@@ -625,7 +625,7 @@ public abstract class AbstractICPPlanner implements ICPPlannerInterface
    @Override
    public boolean isInInitialTransfer()
    {
-      return isInitialTransfer.getBooleanValue();
+      return isInitialPhase.getBooleanValue();
    }
 
    /** {@inheritDoc} */

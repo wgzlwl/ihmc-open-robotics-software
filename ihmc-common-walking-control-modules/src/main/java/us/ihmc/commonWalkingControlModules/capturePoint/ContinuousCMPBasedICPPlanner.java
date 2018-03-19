@@ -362,7 +362,7 @@ public class ContinuousCMPBasedICPPlanner extends AbstractICPPlanner
       isHoldingPosition.set(false);
 
       isStanding.set(false);
-      isInitialTransfer.set(false);
+      isInitialPhase.set(false);
       isDoubleSupport.set(false);
       this.initialTime.set(initialTime);
 
@@ -587,7 +587,7 @@ public class ContinuousCMPBasedICPPlanner extends AbstractICPPlanner
 
       if (isStanding.getBooleanValue() && !isDoneWalking)
       {
-         isInitialTransfer.set(true);
+         isInitialPhase.set(true);
          isStanding.set(false);
       }
 
