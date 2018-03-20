@@ -1,13 +1,8 @@
 package us.ihmc.commonWalkingControlModules.capturePoint.smoothCMPBasedICPPlanner.ICPGeneration;
 
-import java.util.List;
-
 import org.ejml.data.DenseMatrix64F;
 import org.ejml.interfaces.linsol.LinearSolver;
-
-import us.ihmc.commons.PrintTools;
 import us.ihmc.euclid.Axis;
-import us.ihmc.euclid.referenceFrame.FramePoint3D;
 import us.ihmc.euclid.referenceFrame.interfaces.FixedFramePoint3DBasics;
 import us.ihmc.euclid.referenceFrame.interfaces.FramePoint3DReadOnly;
 import us.ihmc.euclid.referenceFrame.interfaces.FrameTuple3DReadOnly;
@@ -15,6 +10,8 @@ import us.ihmc.robotics.linearAlgebra.ConfigurableSolvePseudoInverseSVD;
 import us.ihmc.robotics.linearAlgebra.MatrixTools;
 import us.ihmc.robotics.math.trajectories.FrameTrajectory3D;
 import us.ihmc.robotics.math.trajectories.Trajectory;
+
+import java.util.List;
 
 public class SmoothCapturePointAdjustmentToolbox
 {
@@ -48,28 +45,26 @@ public class SmoothCapturePointAdjustmentToolbox
    }
 
    public void adjustDesiredTrajectoriesForInitialSmoothing3D(double omega0, List<FrameTrajectory3D> copPolynomials3D,
-                                                              List<? extends FrameTuple3DReadOnly> icpQuantityInitialConditionList,
+                                                              List<? extends FrameTuple3DReadOnly> initialICPConditions,
                                                               List<? extends FixedFramePoint3DBasics> entryCornerPointsToPack,
                                                               List<? extends FixedFramePoint3DBasics> exitCornerPointsToPack)
    {
       FrameTrajectory3D cmpPolynomial3DSegment1 = copPolynomials3D.get(0);
       FrameTrajectory3D cmpPolynomial3DSegment2 = copPolynomials3D.get(1);
-      FramePoint3DReadOnly finalIcpPosition = exitCornerPointsToPack.get(1);
+      FramePoint3DReadOnly finalICPPosition = exitCornerPointsToPack.get(1);
 
       for (Axis axis : Axis.values)
       {
          Trajectory cmpPolynomialSegment1 = cmpPolynomial3DSegment1.getTrajectory(axis);
          Trajectory cmpPolynomialSegment2 = cmpPolynomial3DSegment2.getTrajectory(axis);
 
-         double finalIcpPositionScalar = finalIcpPosition.getElement(axis.ordinal());
-
          int numberOfCoefficients = cmpPolynomialSegment1.getNumberOfCoefficients();
-         int numberOfConstrainedDerivatives = numberOfCoefficients / 2;
+         int numberOfConstrainedDerivatives = Math.min(numberOfCoefficients / 2, 3);
 
          initializeMatrices1D(numberOfCoefficients, numberOfConstrainedDerivatives);
 
          populateBoundaryConditionMatrices1D(omega0, axis, numberOfCoefficients, numberOfConstrainedDerivatives, cmpPolynomialSegment1, cmpPolynomialSegment2,
-                                             icpQuantityInitialConditionList, finalIcpPositionScalar);
+                                             initialICPConditions, finalICPPosition.getElement(axis.ordinal()));
          computeAdjustedPolynomialCoefficientVectors1D(numberOfCoefficients);
          adjustCMPPolynomials(cmpPolynomialSegment1, cmpPolynomialSegment2);
       }
@@ -85,28 +80,27 @@ public class SmoothCapturePointAdjustmentToolbox
 
    private void populateBoundaryConditionMatrices1D(double omega0, Axis axis, int numberOfCoefficients, int numberOfConstrainedDerivatives,
                                                     Trajectory cmpPolynomialSegment1, Trajectory cmpPolynomialSegment2,
-                                                    List<? extends FrameTuple3DReadOnly> icpQuantityInitialConditionList, double icpPositionFinalSegment2Scalar)
+                                                    List<? extends FrameTuple3DReadOnly> initialICPConditions, double finalICPPosition)
    {
       calculateGeneralizedICPMatricesOnCMPSegment2(omega0, cmpPolynomialSegment2);
 
       // TODO: check whether division always integer
-      for (int i = 0; i < numberOfConstrainedDerivatives; i++)
+      for (int order = 0; order < numberOfConstrainedDerivatives; order++)
       {
-         double icpQuantityInitialConditionScalar = icpQuantityInitialConditionList.get(i).getElement(axis.ordinal());
-         calculateGeneralizedICPMatricesOnCMPSegment1(omega0, i, cmpPolynomialSegment1);
-         setGeneralizedBoundaryConstraints(i, numberOfCoefficients, numberOfConstrainedDerivatives, cmpPolynomialSegment1, cmpPolynomialSegment2,
-                                           icpQuantityInitialConditionScalar, icpPositionFinalSegment2Scalar);
+         double initialICPConditionScalar = initialICPConditions.get(order).getElement(axis.ordinal());
+         calculateGeneralizedICPMatricesOnCMPSegment1(omega0, order, cmpPolynomialSegment1);
+         setGeneralizedBoundaryConstraints(order, numberOfCoefficients, numberOfConstrainedDerivatives, cmpPolynomialSegment1, cmpPolynomialSegment2,
+                                           initialICPConditionScalar, finalICPPosition);
       }
    }
 
    private static void setGeneralizedBoundaryConstraintICP0(DenseMatrix64F boundaryConditionVectorToPack, DenseMatrix64F boundaryConditionMatrixToPack,
-                                                            int order, int numberOfCoefficients, double icpQuantityInitialConditionScalar,
-                                                            double icpPositionFinalSegment2, DenseMatrix64F generalizedAlphaBetaPrimeRowSegment1,
-                                                            double generalizedGammaPrimeMatrixSegment1, DenseMatrix64F generalizedAlphaBetaPrimeRowSegment2,
-                                                            double generalizedGammaPrimeMatrixSegment2)
+                                                            int order, int numberOfCoefficients, double initialICPCondition, double finalICPPosition,
+                                                            DenseMatrix64F generalizedAlphaBetaPrimeRowSegment1, double generalizedGammaPrimeMatrixSegment1,
+                                                            DenseMatrix64F generalizedAlphaBetaPrimeRowSegment2, double generalizedGammaPrimeMatrixSegment2)
    {
       double generalizedBoundaryConditionValue =
-            icpQuantityInitialConditionScalar - generalizedGammaPrimeMatrixSegment1 * generalizedGammaPrimeMatrixSegment2 * icpPositionFinalSegment2;
+            initialICPCondition - generalizedGammaPrimeMatrixSegment1 * generalizedGammaPrimeMatrixSegment2 * finalICPPosition;
       boundaryConditionVectorToPack.set(order, generalizedBoundaryConditionValue);
 
       MatrixTools
@@ -191,12 +185,11 @@ public class SmoothCapturePointAdjustmentToolbox
    }
 
    private void setGeneralizedBoundaryConstraints(int order, int numberOfCoefficients, int numberOfConstrainedDerivatives, Trajectory cmpPolynomialSegment1,
-                                                  Trajectory cmpPolynomialSegment2, double icpQuantityInitialConditionScalar,
-                                                  double icpPositionFinalSegment2Scalar)
+                                                  Trajectory cmpPolynomialSegment2, double initialICPCondition, double finalICPPosition)
    {
-      setGeneralizedBoundaryConstraintICP0(boundaryConditionVector, boundaryConditionMatrix, order, numberOfCoefficients, icpQuantityInitialConditionScalar,
-                                           icpPositionFinalSegment2Scalar, generalizedAlphaBetaPrimeRowSegment1, generalizedGammaPrimeSegment1,
-                                           generalizedAlphaBetaPrimeRowSegment2, generalizedGammaPrimeSegment2);
+      setGeneralizedBoundaryConstraintICP0(boundaryConditionVector, boundaryConditionMatrix, order, numberOfCoefficients, initialICPCondition, finalICPPosition,
+                                           generalizedAlphaBetaPrimeRowSegment1, generalizedGammaPrimeSegment1, generalizedAlphaBetaPrimeRowSegment2,
+                                           generalizedGammaPrimeSegment2);
       setGeneralizedBoundaryConstraintCMP0(boundaryConditionVector, boundaryConditionMatrix, order, numberOfConstrainedDerivatives, cmpPolynomialSegment1);
       setGeneralizedBoundaryConstraintCMP1(boundaryConditionVector, boundaryConditionMatrix, order, numberOfCoefficients, numberOfConstrainedDerivatives,
                                            cmpPolynomialSegment1, cmpPolynomialSegment2);
