@@ -267,7 +267,7 @@ public class ReferenceICPTrajectoryGenerator implements TrajectoryGenerator
          copPolynomial3D.getDerivative(1, localTimeInCurrentPhase.getDoubleValue(), desiredICPVelocity);
          copPolynomial3D.getDerivative(2, localTimeInCurrentPhase.getDoubleValue(), desiredICPAcceleration);
 
-         setInitialConditionsForAdjustment();
+         setInitialConditionsForAdjustment(desiredICPPosition, desiredICPVelocity, desiredICPAcceleration);
       }
    }
 
@@ -333,11 +333,6 @@ public class ReferenceICPTrajectoryGenerator implements TrajectoryGenerator
       icpInitialConditions.get(2).setIncludingFrame(desiredICPAcceleration);
    }
 
-   public void setInitialConditionsForAdjustment()
-   {
-      setInitialConditionsForAdjustment(desiredICPPosition, desiredICPVelocity, desiredICPAcceleration);
-   }
-
    public void adjustDesiredTrajectoriesForInitialSmoothing()
    {
       if ((isInitialTransfer.getBooleanValue() || (continuouslyAdjustForICPContinuity.getBooleanValue())) && copTrajectories.size() > 1)
@@ -401,7 +396,7 @@ public class ReferenceICPTrajectoryGenerator implements TrajectoryGenerator
       return currentSegmentIndex;
    }
 
-   private void getICPPositionDesiredFinalFromSegment(FramePoint3D icpPositionDesiredFinal, int segment)
+   public void getICPPositionDesiredFinalFromSegment(FramePoint3D icpPositionDesiredFinal, int segment)
    {
       icpPositionDesiredFinal.set(icpDesiredFinalPositions.get(segment));
    }
@@ -471,13 +466,8 @@ public class ReferenceICPTrajectoryGenerator implements TrajectoryGenerator
          icpPhaseExitCornerPointsToPack.get(i).setToNaN();
    }
 
-   public List<? extends FramePoint3DReadOnly> getICPPositonFromCoPDesiredFinalList()
+   public List<? extends FramePoint3DReadOnly> getICPPositionFromCoPDesiredFinalList()
    {
       return icpDesiredFinalPositionsFromCoPs;
-   }
-
-   public int getTotalNumberOfSegments()
-   {
-      return totalNumberOfCMPSegments.getIntegerValue();
    }
 }
