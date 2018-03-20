@@ -208,6 +208,7 @@ public class WalkingSingleSupportState extends SingleSupportState
          swingTime = defaultSwingTime;
          footstepTiming.setTimings(swingTime, defaultTouchdownTime, defaultTransferTime);
          balanceManager.packFootstepForRecoveringFromDisturbance(swingSide, defaultSwingTime, nextFootstep);
+         balanceManager.setDesiredICPToCurrent();
          nextFootstep.setTrajectoryType(TrajectoryType.DEFAULT);
          walkingMessageHandler.reportWalkingAbortRequested();
          walkingMessageHandler.clearFootsteps();

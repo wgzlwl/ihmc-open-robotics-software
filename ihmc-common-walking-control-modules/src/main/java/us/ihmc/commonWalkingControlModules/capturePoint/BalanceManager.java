@@ -310,7 +310,6 @@ public class BalanceManager
 
    /**
     * Sets the next footstep that the robot will take. Should be set at the beginning of transfer.
-    * @param upcomingFootstep
     */
    public void setUpcomingFootstep(Footstep upcomingFootstep)
    {
@@ -321,7 +320,6 @@ public class BalanceManager
    /**
     * Sets the next footstep that the robot will take. Should be set at the beginning of swing. Modifies the momentum recovery control module, which checks
     * the stability of the robot.
-    * @param nextFootstep
     */
    public void setNextFootstep(Footstep nextFootstep)
    {
@@ -332,10 +330,7 @@ public class BalanceManager
 
    public boolean wasTimingAdjustedForReachability()
    {
-      if (ENABLE_DYN_REACHABILITY)
-         return dynamicReachabilityCalculator.wasTimingAdjusted();
-      else
-         return false;
+      return ENABLE_DYN_REACHABILITY && dynamicReachabilityCalculator.wasTimingAdjusted();
    }
 
    public double getCurrentTransferDurationAdjustedForReachability()
@@ -523,11 +518,6 @@ public class BalanceManager
       desiredCMPToPack.setIncludingFrame(yoDesiredCMP);
    }
 
-   public void getPerfectCMP(FramePoint2D desiredCMPToPack)
-   {
-      desiredCMPToPack.setIncludingFrame(yoPerfectCMP);
-   }
-
    public void getDesiredICP(FramePoint2D desiredICPToPack)
    {
       desiredICPToPack.setIncludingFrame(yoDesiredCapturePoint);
@@ -650,6 +640,12 @@ public class BalanceManager
       return closeEnough;
    }
 
+   public void setDesiredICPToCurrent()
+   {
+      controllerToolbox.getCapturePoint(tempCapturePoint);
+      icpPlanner.setDesiredCapturePoint(tempCapturePoint);
+   }
+
    public double getICPErrorMagnitude()
    {
       controllerToolbox.getCapturePoint(capturePoint2d);
@@ -672,11 +668,6 @@ public class BalanceManager
    public boolean isICPPlanDone()
    {
       return icpPlanner.isDone();
-   }
-
-   public boolean isOnExitCMP()
-   {
-      return icpPlanner.isOnExitCMP();
    }
 
    public boolean isPushRecoveryEnabled()
@@ -724,7 +715,7 @@ public class BalanceManager
       holdICPToCurrentCoMLocationInNextDoubleSupport.set(true);
    }
 
-   public void requestICPPlannerToHoldCurrentCoM()
+   private void requestICPPlannerToHoldCurrentCoM()
    {
       centerOfMassPosition.setToZero(centerOfMassFrame);
 
