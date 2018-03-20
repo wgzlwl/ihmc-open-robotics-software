@@ -4,13 +4,12 @@ import us.ihmc.commonWalkingControlModules.capturePoint.smoothCMPBasedICPPlanner
 import us.ihmc.euclid.referenceFrame.FramePoint3D;
 import us.ihmc.euclid.referenceFrame.FrameVector3D;
 import us.ihmc.euclid.referenceFrame.interfaces.FixedFramePoint3DBasics;
+import us.ihmc.euclid.referenceFrame.interfaces.FixedFrameVector3DBasics;
 import us.ihmc.euclid.referenceFrame.interfaces.FramePoint3DReadOnly;
 import us.ihmc.euclid.referenceFrame.interfaces.FrameVector3DReadOnly;
-import us.ihmc.robotics.math.frames.YoFramePoint;
-import us.ihmc.robotics.math.frames.YoFrameVector;
 import us.ihmc.robotics.math.trajectories.FrameTrajectory3D;
-import us.ihmc.robotics.math.trajectories.PositionTrajectoryGenerator;
 import us.ihmc.robotics.math.trajectories.SegmentedFrameTrajectory3D;
+import us.ihmc.robotics.math.trajectories.TrajectoryGenerator;
 import us.ihmc.yoVariables.registry.YoVariableRegistry;
 import us.ihmc.yoVariables.variable.YoBoolean;
 import us.ihmc.yoVariables.variable.YoDouble;
@@ -23,7 +22,7 @@ import java.util.List;
  * @author Tim Seyde
  */
 
-public class ReferenceCoMTrajectoryGenerator implements PositionTrajectoryGenerator
+public class ReferenceCoMTrajectoryGenerator implements TrajectoryGenerator
 {
    private final static int FIRST_SEGMENT = 0;
 
@@ -71,8 +70,8 @@ public class ReferenceCoMTrajectoryGenerator implements PositionTrajectoryGenera
    private final SmoothCapturePointToolbox icpToolbox = new SmoothCapturePointToolbox();
    private final SmoothCoMIntegrationToolbox comToolbox = new SmoothCoMIntegrationToolbox(icpToolbox);
 
-   public ReferenceCoMTrajectoryGenerator(String namePrefix, YoDouble omega0, YoInteger numberOfFootstepsToConsider,
-                                          YoBoolean isInitialTransfer, YoBoolean isDoubleSupport, YoVariableRegistry registry)
+   public ReferenceCoMTrajectoryGenerator(String namePrefix, YoDouble omega0, YoInteger numberOfFootstepsToConsider, YoBoolean isInitialTransfer,
+                                          YoBoolean isDoubleSupport, YoVariableRegistry registry)
    {
       this.omega0 = omega0;
       this.numberOfFootstepsToConsider = numberOfFootstepsToConsider;
@@ -104,7 +103,8 @@ public class ReferenceCoMTrajectoryGenerator implements PositionTrajectoryGenera
    }
 
    public void initializeForTransfer(double initialTime, List<? extends SegmentedFrameTrajectory3D> transferCMPTrajectories,
-                                     List<? extends SegmentedFrameTrajectory3D> swingCMPTrajectories, List<? extends FramePoint3DReadOnly> icpDesiredFinalPositions)
+                                     List<? extends SegmentedFrameTrajectory3D> swingCMPTrajectories,
+                                     List<? extends FramePoint3DReadOnly> icpDesiredFinalPositions)
    {
       reset();
       startTimeOfCurrentPhase.set(initialTime);
@@ -151,7 +151,8 @@ public class ReferenceCoMTrajectoryGenerator implements PositionTrajectoryGenera
    }
 
    public void initializeForSwing(double initialTime, List<? extends SegmentedFrameTrajectory3D> transferCMPTrajectories,
-                                  List<? extends SegmentedFrameTrajectory3D> swingCMPTrajectories, List<? extends FramePoint3DReadOnly> icpDesiredFinalPositions)
+                                  List<? extends SegmentedFrameTrajectory3D> swingCMPTrajectories,
+                                  List<? extends FramePoint3DReadOnly> icpDesiredFinalPositions)
    {
       reset();
       startTimeOfCurrentPhase.set(initialTime);
@@ -217,11 +218,11 @@ public class ReferenceCoMTrajectoryGenerator implements PositionTrajectoryGenera
          comAccelerationDesiredInitialCurrentSegment.set(comAccelerationDesiredCurrent);
       }
 
-      comToolbox.computeDesiredCenterOfMassCornerData(icpDesiredFinalPositions, comDesiredInitialPositions,
-                                                      comDesiredFinalPositions, comDesiredInitialVelocities, comDesiredFinalVelocities,
-                                                      comDesiredInitialAccelerations, comDesiredFinalAccelerations, cmpTrajectories,
-                                                      comPositionDesiredInitialCurrentSegment, comVelocityDesiredInitialCurrentSegment,
-                                                      comAccelerationDesiredInitialCurrentSegment, omega0.getDoubleValue());
+      comToolbox
+            .computeDesiredCenterOfMassCornerData(icpDesiredFinalPositions, comDesiredInitialPositions, comDesiredFinalPositions, comDesiredInitialVelocities,
+                                                  comDesiredFinalVelocities, comDesiredInitialAccelerations, comDesiredFinalAccelerations, cmpTrajectories,
+                                                  comPositionDesiredInitialCurrentSegment, comVelocityDesiredInitialCurrentSegment,
+                                                  comAccelerationDesiredInitialCurrentSegment, omega0.getDoubleValue());
    }
 
    @Override
@@ -240,9 +241,9 @@ public class ReferenceCoMTrajectoryGenerator implements PositionTrajectoryGenera
                                                     comPositionDesiredInitialCurrentSegment, cmpPolynomial3D, comPositionDesiredCurrent);
       comToolbox.computeDesiredCenterOfMassVelocity(omega0.getDoubleValue(), localTimeInCurrentPhase.getDoubleValue(), icpPositionDesiredFinalCurrentSegment,
                                                     comPositionDesiredInitialCurrentSegment, cmpPolynomial3D, comVelocityDesiredCurrent);
-      comToolbox.computeDesiredCenterOfMassAcceleration(omega0.getDoubleValue(), localTimeInCurrentPhase.getDoubleValue(),
-                                                        icpPositionDesiredFinalCurrentSegment, comPositionDesiredInitialCurrentSegment, cmpPolynomial3D,
-                                                        comAccelerationDesiredCurrent);
+      comToolbox
+            .computeDesiredCenterOfMassAcceleration(omega0.getDoubleValue(), localTimeInCurrentPhase.getDoubleValue(), icpPositionDesiredFinalCurrentSegment,
+                                                    comPositionDesiredInitialCurrentSegment, cmpPolynomial3D, comAccelerationDesiredCurrent);
    }
 
    private int getCurrentSegmentIndex(double timeInCurrentPhase, List<FrameTrajectory3D> cmpTrajectories)
@@ -260,17 +261,17 @@ public class ReferenceCoMTrajectoryGenerator implements PositionTrajectoryGenera
       return currentSegmentIndex;
    }
 
-   public void getICPPositionDesiredFinalFromSegment(FixedFramePoint3DBasics icpPositionDesiredFinal, int segment)
+   private void getICPPositionDesiredFinalFromSegment(FixedFramePoint3DBasics icpPositionDesiredFinal, int segment)
    {
       icpPositionDesiredFinal.set(icpDesiredFinalPositions.get(segment));
    }
 
-   public void getPositionDesiredInitialFromSegment(FixedFramePoint3DBasics comPositionDesiredInitial, int segment)
+   private void getPositionDesiredInitialFromSegment(FixedFramePoint3DBasics comPositionDesiredInitial, int segment)
    {
       comPositionDesiredInitial.set(comDesiredInitialPositions.get(segment));
    }
 
-   public void getPositionDesiredFinalFromSegment(FixedFramePoint3DBasics comPositionDesiredFinal, int segment)
+   private void getPositionDesiredFinalFromSegment(FixedFramePoint3DBasics comPositionDesiredFinal, int segment)
    {
       comPositionDesiredFinal.set(comDesiredFinalPositions.get(segment));
    }
@@ -299,64 +300,26 @@ public class ReferenceCoMTrajectoryGenerator implements PositionTrajectoryGenera
       }
    }
 
-   @Override
-   public void getPosition(FramePoint3D positionToPack)
+   public void getPosition(FixedFramePoint3DBasics positionToPack)
    {
       positionToPack.set(comPositionDesiredCurrent);
    }
 
-   public void getPosition(YoFramePoint positionToPack)
-   {
-      positionToPack.set(comPositionDesiredCurrent);
-   }
-
-   @Override
-   public void getVelocity(FrameVector3D velocityToPack)
+   public void getVelocity(FixedFrameVector3DBasics velocityToPack)
    {
       velocityToPack.set(comVelocityDesiredCurrent);
    }
 
-   public void getVelocity(YoFrameVector velocityToPack)
-   {
-      velocityToPack.set(comVelocityDesiredCurrent);
-   }
-
-   @Override
-   public void getAcceleration(FrameVector3D accelerationToPack)
+   public void getAcceleration(FixedFrameVector3DBasics accelerationToPack)
    {
       accelerationToPack.set(comAccelerationDesiredCurrent);
    }
 
-   public void getAcceleration(YoFrameVector accelerationToPack)
-   {
-      accelerationToPack.set(comAccelerationDesiredCurrent);
-   }
-
-   @Override
-   public void getLinearData(FramePoint3D positionToPack, FrameVector3D velocityToPack, FrameVector3D accelerationToPack)
+   public void getLinearData(FixedFramePoint3DBasics positionToPack, FixedFrameVector3DBasics velocityToPack, FixedFrameVector3DBasics accelerationToPack)
    {
       getPosition(positionToPack);
       getVelocity(velocityToPack);
       getAcceleration(accelerationToPack);
-   }
-
-   public void getLinearData(YoFramePoint positionToPack, YoFrameVector velocityToPack, YoFrameVector accelerationToPack)
-   {
-      getPosition(positionToPack);
-      getVelocity(velocityToPack);
-      getAcceleration(accelerationToPack);
-   }
-
-   @Override
-   public void showVisualization()
-   {
-
-   }
-
-   @Override
-   public void hideVisualization()
-   {
-
    }
 
    @Override

@@ -1,28 +1,27 @@
 package us.ihmc.commonWalkingControlModules.capturePoint.smoothCMPBasedICPPlanner.ICPGeneration;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import gnu.trove.list.array.TIntArrayList;
 import us.ihmc.euclid.referenceFrame.FramePoint3D;
 import us.ihmc.euclid.referenceFrame.FrameVector3D;
 import us.ihmc.euclid.referenceFrame.ReferenceFrame;
 import us.ihmc.euclid.referenceFrame.interfaces.*;
-import us.ihmc.robotics.math.frames.YoFramePoint;
 import us.ihmc.robotics.math.frames.YoFrameVector;
 import us.ihmc.robotics.math.trajectories.FrameTrajectory3D;
-import us.ihmc.robotics.math.trajectories.PositionTrajectoryGenerator;
 import us.ihmc.robotics.math.trajectories.SegmentedFrameTrajectory3D;
+import us.ihmc.robotics.math.trajectories.TrajectoryGenerator;
 import us.ihmc.yoVariables.registry.YoVariableRegistry;
 import us.ihmc.yoVariables.variable.YoBoolean;
 import us.ihmc.yoVariables.variable.YoDouble;
 import us.ihmc.yoVariables.variable.YoInteger;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Tim Seyde
  */
 
-public class ReferenceICPTrajectoryGenerator implements PositionTrajectoryGenerator
+public class ReferenceICPTrajectoryGenerator implements TrajectoryGenerator
 {
    private final static boolean CONTINUOUSLY_ADJUST_FOR_ICP_DISCONTINUITY = true;
 
@@ -126,7 +125,7 @@ public class ReferenceICPTrajectoryGenerator implements PositionTrajectoryGenera
       icpPhaseExitCornerPointIndices.resetQuick();
    }
 
-   public void resetCoPs()
+   private void resetCoPs()
    {
       copTrajectories.clear();
    }
@@ -402,69 +401,31 @@ public class ReferenceICPTrajectoryGenerator implements PositionTrajectoryGenera
       return currentSegmentIndex;
    }
 
-   public void getICPPositionDesiredFinalFromSegment(FramePoint3D icpPositionDesiredFinal, int segment)
+   private void getICPPositionDesiredFinalFromSegment(FramePoint3D icpPositionDesiredFinal, int segment)
    {
       icpPositionDesiredFinal.set(icpDesiredFinalPositions.get(segment));
    }
 
-   @Override
-   public void getPosition(FramePoint3D positionToPack)
-   {
-      positionToPack.setIncludingFrame(desiredICPPosition);
-   }
-
-   public void getPosition(YoFramePoint positionToPack)
+   public void getPosition(FixedFramePoint3DBasics positionToPack)
    {
       positionToPack.set(desiredICPPosition);
    }
 
-   @Override
-   public void getVelocity(FrameVector3D velocityToPack)
+   public void getVelocity(FixedFrameVector3DBasics velocityToPack)
    {
       velocityToPack.set(desiredICPVelocity);
    }
 
-   public void getVelocity(YoFrameVector velocityToPack)
-   {
-      velocityToPack.set(desiredICPVelocity);
-   }
-
-   @Override
-   public void getAcceleration(FrameVector3D accelerationToPack)
+   public void getAcceleration(FixedFrameVector3DBasics accelerationToPack)
    {
       accelerationToPack.set(desiredICPAcceleration);
    }
 
-   public void getAcceleration(YoFrameVector accelerationToPack)
-   {
-      accelerationToPack.set(desiredICPAcceleration);
-   }
-
-   @Override
-   public void getLinearData(FramePoint3D positionToPack, FrameVector3D velocityToPack, FrameVector3D accelerationToPack)
+   public void getLinearData(FixedFramePoint3DBasics positionToPack, FixedFrameVector3DBasics velocityToPack, FixedFrameVector3DBasics accelerationToPack)
    {
       getPosition(positionToPack);
       getVelocity(velocityToPack);
       getAcceleration(accelerationToPack);
-   }
-
-   public void getLinearData(YoFramePoint positionToPack, YoFrameVector velocityToPack, YoFrameVector accelerationToPack)
-   {
-      getPosition(positionToPack);
-      getVelocity(velocityToPack);
-      getAcceleration(accelerationToPack);
-   }
-
-   @Override
-   public void showVisualization()
-   {
-
-   }
-
-   @Override
-   public void hideVisualization()
-   {
-
    }
 
    @Override
