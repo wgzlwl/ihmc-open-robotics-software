@@ -2,11 +2,9 @@ package us.ihmc.commonWalkingControlModules.capturePoint;
 
 import us.ihmc.commonWalkingControlModules.configurations.ICPPlannerParameters;
 import us.ihmc.commonWalkingControlModules.configurations.ICPWithTimeFreezingPlannerParameters;
-import us.ihmc.euclid.referenceFrame.FramePoint2D;
-import us.ihmc.euclid.referenceFrame.FramePoint3D;
-import us.ihmc.euclid.referenceFrame.FrameVector2D;
-import us.ihmc.euclid.referenceFrame.FrameVector3D;
-import us.ihmc.euclid.referenceFrame.ReferenceFrame;
+import us.ihmc.euclid.referenceFrame.*;
+import us.ihmc.euclid.referenceFrame.interfaces.FramePoint3DReadOnly;
+import us.ihmc.euclid.referenceFrame.interfaces.FrameTuple3DReadOnly;
 import us.ihmc.humanoidRobotics.footstep.Footstep;
 import us.ihmc.humanoidRobotics.footstep.FootstepTiming;
 import us.ihmc.robotics.math.frames.YoFramePoint;
@@ -180,7 +178,8 @@ public class ICPPlannerWithTimeFreezerWrapper implements ICPPlannerWithTimeFreez
    @Override
    public void compute(double time)
    {
-      throw new RuntimeException("Use the method ICPPlannerWithTimeFreezer.compute(FramePoint2D, double) instead. If the time freeze feature is not desired, use ContinuousCMPBasedICPPlanner instead.");
+      throw new RuntimeException(
+            "Use the method ICPPlannerWithTimeFreezer.compute(FramePoint2D, double) instead. If the time freeze feature is not desired, use ContinuousCMPBasedICPPlanner instead.");
    }
 
    /** {@inheritDoc} */
@@ -336,7 +335,7 @@ public class ICPPlannerWithTimeFreezerWrapper implements ICPPlannerWithTimeFreez
    {
       icpPlanner.setSwingDuration(stepNumber, duration);
    }
-   
+
    @Override
    public void setTouchdownDuration(int stepNumber, double duration)
    {
@@ -524,7 +523,6 @@ public class ICPPlannerWithTimeFreezerWrapper implements ICPPlannerWithTimeFreez
       return isTimeBeingFrozen.getBooleanValue();
    }
 
-
    /** {@inheritDoc} */
    @Override
    public void compute(FramePoint2D currentCapturePointPosition, double time)
@@ -541,7 +539,27 @@ public class ICPPlannerWithTimeFreezerWrapper implements ICPPlannerWithTimeFreez
       previousTime.set(time);
    }
 
+   /** {@inheritDoc} */
+   @Override
+   public void setDesiredCapturePoint(FramePoint3DReadOnly desiredICPPosition)
+   {
+      icpPlanner.setDesiredCapturePoint(desiredICPPosition);
+   }
 
+   /** {@inheritDoc} */
+   @Override
+   public void setDesiredCapturePoint(FramePoint3DReadOnly desiredICPPosition, FrameTuple3DReadOnly desiredICPVelocity)
+   {
+      icpPlanner.setDesiredCapturePoint(desiredICPPosition, desiredICPVelocity);
+   }
+
+   /** {@inheritDoc} */
+   @Override
+   public void setDesiredCapturePoint(FramePoint3DReadOnly desiredICPPosition, FrameTuple3DReadOnly desiredICPVelocity,
+                                      FrameTuple3DReadOnly desiredICPAcceleration)
+   {
+      icpPlanner.setDesiredCapturePoint(desiredICPPosition, desiredICPVelocity, desiredICPAcceleration);
+   }
 
    private void doTimeFreezeIfNeeded(FramePoint2D currentCapturePointPosition, double time)
    {

@@ -396,7 +396,7 @@ public class ReferenceICPTrajectoryGenerator implements TrajectoryGenerator
       return currentSegmentIndex;
    }
 
-   public void getICPPositionDesiredFinalFromSegment(FramePoint3D icpPositionDesiredFinal, int segment)
+   private void getICPPositionDesiredFinalFromSegment(FramePoint3D icpPositionDesiredFinal, int segment)
    {
       icpPositionDesiredFinal.set(icpDesiredFinalPositions.get(segment));
    }

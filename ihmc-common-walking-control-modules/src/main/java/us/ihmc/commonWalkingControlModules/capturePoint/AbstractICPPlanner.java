@@ -1,19 +1,12 @@
 package us.ihmc.commonWalkingControlModules.capturePoint;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import us.ihmc.commonWalkingControlModules.bipedSupportPolygons.BipedSupportPolygons;
 import us.ihmc.commonWalkingControlModules.configurations.ICPPlannerParameters;
 import us.ihmc.commons.Epsilons;
 import us.ihmc.commons.MathTools;
-import us.ihmc.euclid.referenceFrame.FrameLine2D;
-import us.ihmc.euclid.referenceFrame.FrameLineSegment2D;
-import us.ihmc.euclid.referenceFrame.FramePoint2D;
-import us.ihmc.euclid.referenceFrame.FramePoint3D;
-import us.ihmc.euclid.referenceFrame.FrameVector2D;
-import us.ihmc.euclid.referenceFrame.FrameVector3D;
-import us.ihmc.euclid.referenceFrame.ReferenceFrame;
+import us.ihmc.euclid.referenceFrame.*;
+import us.ihmc.euclid.referenceFrame.interfaces.FramePoint3DReadOnly;
+import us.ihmc.euclid.referenceFrame.interfaces.FrameTuple3DReadOnly;
 import us.ihmc.robotics.math.frames.YoFramePoint;
 import us.ihmc.robotics.math.frames.YoFramePoint2d;
 import us.ihmc.robotics.math.frames.YoFramePointInMultipleFrames;
@@ -26,6 +19,9 @@ import us.ihmc.yoVariables.variable.YoBoolean;
 import us.ihmc.yoVariables.variable.YoDouble;
 import us.ihmc.yoVariables.variable.YoEnum;
 import us.ihmc.yoVariables.variable.YoInteger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractICPPlanner implements ICPPlannerInterface
 {
@@ -72,7 +68,7 @@ public abstract class AbstractICPPlanner implements ICPPlannerInterface
     * </p>
     */
    protected final YoDouble defaultSwingDurationAlpha = new YoDouble(namePrefix + "DefaultSwingDurationAlpha",
-                                                                   "Repartition of the swing duration around the exit corner point.", registry);
+                                                                     "Repartition of the swing duration around the exit corner point.", registry);
    protected final ArrayList<YoDouble> swingDurationAlphas = new ArrayList<>();
 
    /**
@@ -85,11 +81,10 @@ public abstract class AbstractICPPlanner implements ICPPlannerInterface
     * </ul>
     */
    protected final YoDouble defaultTransferDurationAlpha = new YoDouble(namePrefix + "DefaultTransferDurationAlpha",
-                                                                      "Repartition of the transfer duration around the entry corner point.", registry);
+                                                                        "Repartition of the transfer duration around the entry corner point.", registry);
    protected final ArrayList<YoDouble> transferDurationAlphas = new ArrayList<>();
 
    protected final YoDouble finalTransferDurationAlpha = new YoDouble(namePrefix + "FinalTransferDurationAlpha", registry);
-
 
    /** Time at which the current state was initialized. */
    protected final YoDouble initialTime = new YoDouble(namePrefix + "CurrentStateInitialTime", registry);
@@ -141,7 +136,7 @@ public abstract class AbstractICPPlanner implements ICPPlannerInterface
 
    /**
     * Creates an ICP planner. Refer to the class documentation: {@link ContinuousCMPBasedICPPlanner}.
-    * 
+    *
     * @param bipedSupportPolygons it is used to get reference frames relevant for walking such as
     *           the sole frames. It is also used in
     *           {@link ReferenceCentroidalMomentumPivotLocationsCalculator} to adapt the ICP plan to
@@ -167,7 +162,6 @@ public abstract class AbstractICPPlanner implements ICPPlannerInterface
             soleZUpFrames.get(RobotSide.RIGHT)};
       singleSupportInitialICP = new YoFramePointInMultipleFrames(namePrefix + "SingleSupportInitialICP", registry, framesToRegister);
       singleSupportFinalICP = new YoFramePointInMultipleFrames(namePrefix + "SingleSupportFinalICP", registry, framesToRegister);
-
 
       for (int i = 0; i < numberOfFootstepsToConsider; i++)
       {
@@ -327,6 +321,7 @@ public abstract class AbstractICPPlanner implements ICPPlannerInterface
    public abstract int getNumberOfFootstepsRegistered();
 
    protected abstract void updateTransferPlan(boolean maintainContinuity);
+
    protected abstract void updateSingleSupportPlan(boolean maintainContinuity);
 
    private final FramePoint2D desiredICP2d = new FramePoint2D();
@@ -402,7 +397,6 @@ public abstract class AbstractICPPlanner implements ICPPlannerInterface
       desiredCenterOfMassPositionToPack.set(desiredCoMPosition);
    }
 
-
    /** {@inheritDoc} */
    @Override
    public void getDesiredCapturePointVelocity(FrameVector3D desiredCapturePointVelocityToPack)
@@ -444,11 +438,6 @@ public abstract class AbstractICPPlanner implements ICPPlannerInterface
    {
       desiredCentroidalMomentumPivotPositionToPack.setIncludingFrame(desiredCMPPosition);
    }
-   
-   public void getDesiredCentroidalMomentumPivotPosition(YoFramePoint desiredCentroidalMomentumPivotPositionToPack)
-   {
-      desiredCentroidalMomentumPivotPositionToPack.set(desiredCMPPosition);
-   }
 
    /** {@inheritDoc} */
    @Override
@@ -462,11 +451,6 @@ public abstract class AbstractICPPlanner implements ICPPlannerInterface
    public void getDesiredCentroidalMomentumPivotVelocity(FrameVector2D desiredCentroidalMomentumPivotVelocityToPack)
    {
       desiredCentroidalMomentumPivotVelocityToPack.setIncludingFrame(desiredCMPVelocity);
-   }
-
-   public void getDesiredCentroidalMomentumPivotVelocity(YoFrameVector desiredCentroidalMomentumPivotVelocityToPack)
-   {
-      desiredCentroidalMomentumPivotVelocityToPack.set(desiredCMPVelocity);
    }
 
    /** {@inheritDoc} */
@@ -515,10 +499,10 @@ public abstract class AbstractICPPlanner implements ICPPlannerInterface
    }
 
    /** {@inheritDoc} */
-    @Override
+   @Override
    public double getTouchdownDuration(int stepNumber)
    {
-       return touchdownDurations.get(stepNumber).getDoubleValue();
+      return touchdownDurations.get(stepNumber).getDoubleValue();
    }
 
    /** {@inheritDoc} */
@@ -539,7 +523,7 @@ public abstract class AbstractICPPlanner implements ICPPlannerInterface
    @Override
    public void setFinalTransferDuration(double duration)
    {
-      if(duration < Epsilons.ONE_HUNDREDTH)
+      if (duration < Epsilons.ONE_HUNDREDTH)
          return;
       defaultFinalTransferDuration.set(duration);
    }
@@ -635,5 +619,31 @@ public abstract class AbstractICPPlanner implements ICPPlannerInterface
       return timeInCurrentStateRemaining.getDoubleValue() <= 0.0;
    }
 
+   private final FramePoint3D tempPoint = new FramePoint3D();
 
+   /** {@inheritDoc} */
+   @Override
+   public void setDesiredCapturePoint(FramePoint3DReadOnly desiredICPPosition)
+   {
+      tempPoint.setToZero(worldFrame);
+      setDesiredCapturePoint(desiredICPPosition, tempPoint);
+   }
+
+   /** {@inheritDoc} */
+   @Override
+   public void setDesiredCapturePoint(FramePoint3DReadOnly desiredICPPosition, FrameTuple3DReadOnly desiredICPVelocity)
+   {
+      tempPoint.setToZero(worldFrame);
+      setDesiredCapturePoint(desiredICPPosition, desiredICPVelocity, tempPoint);
+   }
+
+   /** {@inheritDoc} */
+   @Override
+   public void setDesiredCapturePoint(FramePoint3DReadOnly desiredICPPosition, FrameTuple3DReadOnly desiredICPVelocity,
+                                      FrameTuple3DReadOnly desiredICPAcceleration)
+   {
+      this.desiredICPPosition.setAndMatchFrame(desiredICPPosition);
+      this.desiredICPVelocity.setAndMatchFrame(desiredICPVelocity);
+      this.desiredICPAcceleration.setAndMatchFrame(desiredICPAcceleration);
+   }
 }
