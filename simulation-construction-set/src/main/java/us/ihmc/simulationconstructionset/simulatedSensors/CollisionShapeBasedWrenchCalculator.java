@@ -62,7 +62,7 @@ public class CollisionShapeBasedWrenchCalculator implements WrenchCalculatorInte
          Vector3D force = new Vector3D();
          Vector3D position = new Vector3D();
 
-         contactPoint.getImpulse(force);
+         contactPoint.getForce(force);
          contactPoint.getPosition(position);
 
          wrenchMatrix.set(3, 0, wrenchMatrix.get(3, 0) + force.getX());

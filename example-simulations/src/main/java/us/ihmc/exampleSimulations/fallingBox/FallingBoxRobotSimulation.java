@@ -47,11 +47,6 @@ public class FallingBoxRobotSimulation
       csFloatingJoint.setPosition(0.0, -0.5 * width, height);
       csFloatingJoint.setVelocity(1.0, 0.0, 0.0);
 
-      GroundContactPointBasedEstimator gcpEstimator = new GroundContactPointBasedEstimator(gcpRobot);
-      gcpRobot.setController(gcpEstimator);
-      CollisionShapeBasedEstimator csEstimator = new CollisionShapeBasedEstimator(csRobot);
-      csRobot.setController(csEstimator);
-
       List<Robot> allSimulatedRobotList = new ArrayList<Robot>();
       allSimulatedRobotList.add(gcpRobot);
       allSimulatedRobotList.add(csRobot);
@@ -76,6 +71,11 @@ public class FallingBoxRobotSimulation
 
       CollisionManager collisionManager = new CollisionManager(environment.getTerrainObject3D(), collisionHandler);
       scs.initializeShapeCollision(collisionManager);
+
+      GroundContactPointBasedEstimator gcpEstimator = new GroundContactPointBasedEstimator(gcpRobot);
+      gcpRobot.setController(gcpEstimator);
+      CollisionShapeBasedEstimator csEstimator = new CollisionShapeBasedEstimator(csRobot);
+      csRobot.setController(csEstimator);
 
       scs.setDT(dt, 1);
       scs.setFastSimulate(true);
