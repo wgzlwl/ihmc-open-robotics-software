@@ -4580,11 +4580,6 @@ public class SimulationConstructionSet implements Runnable, YoVariableHolder, Ru
       mySimulation.initializeShapeCollision(collisionManager);
    }
 
-//   public void initializeCollisionDetectionAndHandling(DefaultCollisionVisualizer collisionVisualizer, CollisionHandler collisionHandler)
-//   {
-//      mySimulation.initializeCollisionDetectionAndHandling(collisionVisualizer, collisionHandler);
-//   }
-
    @Override
    public NameSpace getParameterRootPath()
    {
