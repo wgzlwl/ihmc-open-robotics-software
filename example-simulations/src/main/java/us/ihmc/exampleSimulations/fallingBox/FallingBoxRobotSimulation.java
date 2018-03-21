@@ -5,6 +5,7 @@ import java.util.List;
 
 import us.ihmc.euclid.geometry.Box3D;
 import us.ihmc.graphicsDescription.Graphics3DObject;
+import us.ihmc.graphicsDescription.yoGraphics.YoGraphicsListRegistry;
 import us.ihmc.simulationConstructionSetTools.util.environments.FlatGroundEnvironment;
 import us.ihmc.simulationconstructionset.FloatingJoint;
 import us.ihmc.simulationconstructionset.GroundContactModel;
@@ -12,17 +13,16 @@ import us.ihmc.simulationconstructionset.Robot;
 import us.ihmc.simulationconstructionset.RobotFromDescription;
 import us.ihmc.simulationconstructionset.SimulationConstructionSet;
 import us.ihmc.simulationconstructionset.SimulationConstructionSetParameters;
-import us.ihmc.simulationconstructionset.physics.CollisionHandler;
-import us.ihmc.simulationconstructionset.physics.collision.DefaultCollisionHandler;
-import us.ihmc.simulationconstructionset.physics.collision.DefaultCollisionVisualizer;
+import us.ihmc.simulationconstructionset.physics.collision.HybridImpulseSpringDamperCollisionHandler;
+import us.ihmc.simulationconstructionset.physics.collision.simple.CollisionManager;
 import us.ihmc.simulationconstructionset.util.LinearGroundContactModel;
 
 public class FallingBoxRobotSimulation
 {
-   private static final Box3D box = new Box3D(0.5, 0.3, 0.1);
+   private static final Box3D box = new Box3D(0.5, 0.3, 0.8);
    private static final double mass = 10.0;
 
-   private static final double height = 1.0;
+   private static final double height = 2.0;
    private static final double width = 1.0;
 
    public FallingBoxRobotSimulation()
@@ -36,7 +36,7 @@ public class FallingBoxRobotSimulation
 
       Robot gcpRobot = new RobotFromDescription(gcpRobotDescription);
       Robot csRobot = new RobotFromDescription(csRobotDescription);
-      
+
       GroundContactModel groundModel = new LinearGroundContactModel(gcpRobot, 1422, 15.6, 125.0, 300.0, gcpRobot.getRobotsYoVariableRegistry()); // same value with DRCSCSInitialSetup.
       gcpRobot.setGroundContactModel(groundModel);
 
@@ -66,16 +66,15 @@ public class FallingBoxRobotSimulation
       Graphics3DObject staticLinkGraphics = new Graphics3DObject();
       staticLinkGraphics.addCoordinateSystem(0.1);
       scs.addStaticLinkGraphics(staticLinkGraphics);
-      scs.addStaticLinkGraphics(environment.getTerrainObject3D().getLinkGraphics());
 
-      // simulate.
-      DefaultCollisionVisualizer collisionVisualizer = new DefaultCollisionVisualizer(100.0, 100.0, 0.01, scs, 1000);
       double coefficientOfRestitution = 0.2;
       double coefficientOfFriction = 0.7;
-      CollisionHandler collisionHandler = new DefaultCollisionHandler(coefficientOfRestitution, coefficientOfFriction);
-      scs.initializeCollisionDetector(collisionVisualizer, collisionHandler);
-      scs.addEnvironmentCollisionShapes(environment.getTerrainObject3D().getTerrainCollisionShapes());
-      scs.initializeCollisionHandler(collisionVisualizer, collisionHandler);
+      HybridImpulseSpringDamperCollisionHandler collisionHandler = new HybridImpulseSpringDamperCollisionHandler(coefficientOfRestitution,
+                                                                                                                 coefficientOfFriction, scs.getRootRegistry(),
+                                                                                                                 new YoGraphicsListRegistry());
+
+      CollisionManager collisionManager = new CollisionManager(environment.getTerrainObject3D(), collisionHandler);
+      scs.initializeShapeCollision(collisionManager);
 
       scs.setDT(dt, 1);
       scs.setFastSimulate(true);

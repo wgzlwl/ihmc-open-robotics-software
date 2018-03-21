@@ -93,8 +93,8 @@ public class HybridImpulseSpringDamperCollisionHandler implements CollisionHandl
       this.coefficientOfFriction.set(mu);
 
       rotationalCoefficientOfFrictionBeta.set(0.01);
-      kpCollision.set(2000.0);
-      kdCollision.set(200.0);
+      kpCollision.set(20000.0);
+      kdCollision.set(2000.0);
       kdRotationalDamping.set(0.05);
       pullingOutSpringHysteresisReduction.set(0.8);
 

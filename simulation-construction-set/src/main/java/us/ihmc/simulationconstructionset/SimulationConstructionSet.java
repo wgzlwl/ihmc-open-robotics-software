@@ -34,7 +34,6 @@ import com.jme3.renderer.Camera;
 
 import us.ihmc.commons.PrintTools;
 import us.ihmc.commons.thread.ThreadTools;
-import us.ihmc.euclid.geometry.Shape3D;
 import us.ihmc.euclid.tuple3D.Vector3D;
 import us.ihmc.euclid.tuple3D.interfaces.Tuple3DBasics;
 import us.ihmc.graphicsDescription.Graphics3DObject;
@@ -91,6 +90,7 @@ import us.ihmc.simulationconstructionset.gui.tools.SimulationOverheadPlotterFact
 import us.ihmc.simulationconstructionset.physics.CollisionHandler;
 import us.ihmc.simulationconstructionset.physics.ScsPhysics;
 import us.ihmc.simulationconstructionset.physics.collision.DefaultCollisionVisualizer;
+import us.ihmc.simulationconstructionset.physics.collision.simple.CollisionManager;
 import us.ihmc.simulationconstructionset.robotdefinition.RobotDefinitionFixedFrame;
 import us.ihmc.simulationconstructionset.scripts.Script;
 import us.ihmc.simulationconstructionset.synchronization.SimulationSynchronizer;
@@ -4570,32 +4570,20 @@ public class SimulationConstructionSet implements Runnable, YoVariableHolder, Ru
          myGUI.repaintWindows();
       }
    }
-
-   public void initializeCollisionDetectionAndHandling(DefaultCollisionVisualizer collisionVisualizer, CollisionHandler collisionHandler)
+   
+   public void initializeShapeCollision(CollisionManager collisionManager)
    {
-      mySimulation.initializeCollisionDetectionAndHandling(collisionVisualizer, collisionHandler);
+      if(collisionManager.isVisibleEnvironmentObject())
+         addStaticLinkGraphics(collisionManager.getEnvironmentGraphics());
+      
+      collisionManager.setUpCollisionVisualizer(this);
+      mySimulation.initializeShapeCollision(collisionManager);
    }
 
-   public void initializeCollisionDetector(DefaultCollisionVisualizer collisionVisualizer, CollisionHandler collisionHandler)
-   {
-      mySimulation.initializeCollisionDetector(collisionVisualizer, collisionHandler);
-   }
-
-   public void addEnvironmentCollisionShapes(Shape3D<?> simpleShape)
-   {
-      mySimulation.addEnvironmentCollisionShapes(simpleShape);
-   }
-
-   public void addEnvironmentCollisionShapes(List<? extends Shape3D<?>> simpleShapes)
-   {
-      for (int i = 0; i < simpleShapes.size(); i++)
-         mySimulation.addEnvironmentCollisionShapes(simpleShapes.get(i));
-   }
-
-   public void initializeCollisionHandler(DefaultCollisionVisualizer collisionVisualizer, CollisionHandler collisionHandler)
-   {
-      mySimulation.initializeCollisionHandler(collisionVisualizer, collisionHandler);
-   }
+//   public void initializeCollisionDetectionAndHandling(DefaultCollisionVisualizer collisionVisualizer, CollisionHandler collisionHandler)
+//   {
+//      mySimulation.initializeCollisionDetectionAndHandling(collisionVisualizer, collisionHandler);
+//   }
 
    @Override
    public NameSpace getParameterRootPath()
