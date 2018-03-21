@@ -4573,9 +4573,6 @@ public class SimulationConstructionSet implements Runnable, YoVariableHolder, Ru
    
    public void initializeShapeCollision(CollisionManager collisionManager)
    {
-      if(collisionManager.isVisibleEnvironmentObject())
-         addStaticLinkGraphics(collisionManager.getEnvironmentGraphics());
-      
       collisionManager.setUpCollisionVisualizer(this);
       mySimulation.initializeShapeCollision(collisionManager);
    }

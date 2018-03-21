@@ -6,7 +6,6 @@ import java.util.List;
 import us.ihmc.euclid.geometry.Shape3D;
 import us.ihmc.euclid.transform.RigidBodyTransform;
 import us.ihmc.euclid.tuple3D.Vector3D;
-import us.ihmc.graphicsDescription.Graphics3DObject;
 import us.ihmc.robotics.robotDescription.CollisionMeshDescription;
 import us.ihmc.simulationconstructionset.Joint;
 import us.ihmc.simulationconstructionset.Link;
@@ -34,7 +33,6 @@ public class CollisionManager
    private final static double collisionBallRadius = 0.01;
    private final int numberOfVectorsToCreate = 1000;
 
-   private final boolean visualizeEnvironmentObject = true;
    private TerrainObject3D environmentObject;
 
    private Robot environmentRobot;
@@ -129,19 +127,6 @@ public class CollisionManager
    public DefaultCollisionVisualizer getCollisionVisualizer()
    {
       return collisionVisualizer;
-   }
-
-   public boolean isVisibleEnvironmentObject()
-   {
-      return visualizeEnvironmentObject;
-   }
-
-   public Graphics3DObject getEnvironmentGraphics()
-   {
-      if (environmentObject != null)
-         return environmentObject.getLinkGraphics();
-      else
-         return null;
    }
 
    private static void createCollisionShapesFromLinks(Robot robot, CollisionShapeFactory collisionShapeFactory, CollisionHandler collisionHandler,

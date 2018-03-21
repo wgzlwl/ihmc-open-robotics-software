@@ -66,6 +66,7 @@ public class FallingBoxRobotSimulation
       Graphics3DObject staticLinkGraphics = new Graphics3DObject();
       staticLinkGraphics.addCoordinateSystem(0.1);
       scs.addStaticLinkGraphics(staticLinkGraphics);
+      scs.addStaticLinkGraphics(environment.getTerrainObject3D().getLinkGraphics());
 
       double coefficientOfRestitution = 0.2;
       double coefficientOfFriction = 0.7;
