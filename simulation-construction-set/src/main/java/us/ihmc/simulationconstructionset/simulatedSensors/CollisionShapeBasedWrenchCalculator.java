@@ -4,8 +4,11 @@ import java.util.List;
 
 import org.ejml.data.DenseMatrix64F;
 
+import us.ihmc.euclid.referenceFrame.ReferenceFrame;
 import us.ihmc.euclid.transform.RigidBodyTransform;
+import us.ihmc.euclid.tuple3D.Point3D;
 import us.ihmc.euclid.tuple3D.Vector3D;
+import us.ihmc.robotics.referenceFrames.PoseReferenceFrame;
 import us.ihmc.robotics.screwTheory.SpatialForceVector;
 import us.ihmc.robotics.screwTheory.Wrench;
 import us.ihmc.simulationconstructionset.ExternalForcePoint;
@@ -31,6 +34,8 @@ public class CollisionShapeBasedWrenchCalculator implements WrenchCalculatorInte
       this.contactPoints = contactPoints;
       this.forceTorqueSensorJoint = forceTorqueSensorJoint;
       this.transformToParentJoint = new RigidBodyTransform(transformToParentJoint);
+      
+      this.sensorFrame = new PoseReferenceFrame(forceSensorName + "Frame", ReferenceFrame.getWorldFrame());
    }
 
    public void initializeExternalForcePoints(List<ExternalForcePoint> contactPoints)
@@ -50,11 +55,26 @@ public class CollisionShapeBasedWrenchCalculator implements WrenchCalculatorInte
    {
       transformToPack.set(transformToParentJoint);
    }
+   
+   private final PoseReferenceFrame sensorFrame;
 
+   private final RigidBodyTransform transformToOriginFrame = new RigidBodyTransform();
+   private final Vector3D force = new Vector3D();
+   private final Point3D contactPointOriginFrame = new Point3D();
+   private final Vector3D contactVectorOriginFrame = new Vector3D();
+   private final Vector3D tau = new Vector3D();
+
+   private final Point3D tempContactPoint = new Point3D();
+   
    @Override
    public void calculate()
    {
       wrenchMatrix.zero();
+      
+      forceTorqueSensorJoint.getTransformToWorld(transformToOriginFrame);
+      transformToOriginFrame.multiply(transformToParentJoint);
+      sensorFrame.setPoseAndUpdate(transformToOriginFrame);
+      transformToOriginFrame.invert();
 
       for (int i = 0; i < contactPoints.size(); i++)
       {
@@ -68,6 +88,19 @@ public class CollisionShapeBasedWrenchCalculator implements WrenchCalculatorInte
          wrenchMatrix.set(3, 0, wrenchMatrix.get(3, 0) + force.getX());
          wrenchMatrix.set(4, 0, wrenchMatrix.get(4, 0) + force.getY());
          wrenchMatrix.set(5, 0, wrenchMatrix.get(5, 0) + force.getZ());
+         
+         transformToOriginFrame.transform(force);
+
+         contactPointOriginFrame.set(0.0, 0.0, 0.0);
+
+         contactPoint.getPosition(tempContactPoint);
+         transformToOriginFrame.transform(tempContactPoint, contactPointOriginFrame);
+         contactVectorOriginFrame.set(contactPointOriginFrame);
+         tau.cross(contactVectorOriginFrame, force);
+
+         wrenchMatrix.set(0, 0, wrenchMatrix.get(0, 0) + tau.getX());
+         wrenchMatrix.set(1, 0, wrenchMatrix.get(1, 0) + tau.getY());
+         wrenchMatrix.set(2, 0, wrenchMatrix.get(2, 0) + tau.getZ());
       }
 
       if (doWrenchCorruption)
