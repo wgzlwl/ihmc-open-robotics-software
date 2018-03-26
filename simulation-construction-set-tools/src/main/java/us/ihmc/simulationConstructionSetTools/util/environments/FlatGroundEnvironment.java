@@ -18,11 +18,6 @@ public class FlatGroundEnvironment implements CommonAvatarEnvironmentInterface
       flatGround = DefaultCommonAvatarEnvironment.setUpGround("Ground");
    }
 
-   public void addEnvironmentRobot(Robot robot)
-   {
-      environmentRobots.add(robot);
-   }
-
    @Override
    public TerrainObject3D getTerrainObject3D()
    {

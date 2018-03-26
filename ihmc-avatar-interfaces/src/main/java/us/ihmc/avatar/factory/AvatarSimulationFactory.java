@@ -126,6 +126,7 @@ public class AvatarSimulationFactory
 
       simulationConstructionSet = new SimulationConstructionSet(allSimulatedRobotList.toArray(new Robot[0]), guiInitialSetup.get().getGraphics3DAdapter(),
                                                                 simulationConstructionSetParameters);
+
       simulationConstructionSet.setDT(robotModel.get().getSimulateDT(), 1);
    }
 

@@ -1,8 +1,5 @@
 package us.ihmc.simulationconstructionset.util.ground;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import us.ihmc.euclid.geometry.BoundingBox3D;
 import us.ihmc.euclid.geometry.Box3D;
 import us.ihmc.euclid.geometry.Shape3D;
@@ -13,6 +10,9 @@ import us.ihmc.graphicsDescription.Graphics3DObject;
 import us.ihmc.graphicsDescription.HeightMap;
 import us.ihmc.graphicsDescription.appearance.AppearanceDefinition;
 import us.ihmc.jMonkeyEngineToolkit.HeightMapWithNormals;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CombinedTerrainObject3D implements TerrainObject3D, HeightMapWithNormals
 {
@@ -132,7 +132,9 @@ public class CombinedTerrainObject3D implements TerrainObject3D, HeightMapWithNo
    public void addTerrainObject(TerrainObject3D object)
    {
       terrainObjects.add(object);
-      linkGraphics.combine(object.getLinkGraphics());
+
+      if (object.getLinkGraphics() != null)
+         linkGraphics.combine(object.getLinkGraphics());
 
       if (object.getTerrainCollisionShapes() != null)
       {
