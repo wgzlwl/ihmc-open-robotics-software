@@ -1,13 +1,16 @@
 package us.ihmc.quadrupedRobotics.controlModules;
 
+import us.ihmc.commonWalkingControlModules.controlModules.rigidBody.RigidBodyTaskspaceControlState;
 import us.ihmc.commonWalkingControlModules.controllerCore.command.feedbackController.FeedbackControlCommand;
 import us.ihmc.commonWalkingControlModules.controllerCore.command.feedbackController.OrientationFeedbackControlCommand;
 import us.ihmc.commonWalkingControlModules.controllerCore.command.inverseDynamics.MomentumRateCommand;
 import us.ihmc.commonWalkingControlModules.controllerCore.command.virtualModelControl.VirtualModelControlCommand;
+import us.ihmc.euclid.referenceFrame.FramePose3D;
 import us.ihmc.euclid.referenceFrame.FrameQuaternion;
 import us.ihmc.euclid.referenceFrame.FrameVector3D;
 import us.ihmc.euclid.referenceFrame.ReferenceFrame;
 import us.ihmc.euclid.referenceFrame.interfaces.FrameQuaternionReadOnly;
+import us.ihmc.humanoidRobotics.communication.controllerAPI.command.PelvisOrientationTrajectoryCommand;
 import us.ihmc.quadrupedRobotics.controller.force.QuadrupedForceControllerToolbox;
 import us.ihmc.quadrupedRobotics.controller.force.toolbox.QuadrupedBodyOrientationController;
 import us.ihmc.quadrupedRobotics.estimator.GroundPlaneEstimator;
@@ -18,7 +21,10 @@ import us.ihmc.robotics.controllers.pidGains.implementations.DefaultPID3DGains;
 import us.ihmc.robotics.controllers.pidGains.implementations.ParameterizedPID3DGains;
 import us.ihmc.robotics.math.frames.YoFrameVector;
 import us.ihmc.robotics.referenceFrames.OrientationFrame;
+import us.ihmc.robotics.screwTheory.RigidBody;
 import us.ihmc.yoVariables.registry.YoVariableRegistry;
+
+import java.util.Collection;
 
 public class QuadrupedBodyOrientationManager
 {
@@ -36,6 +42,8 @@ public class QuadrupedBodyOrientationManager
 
    private final FrameQuaternion bodyOrientationReference;
    private final OrientationFrame bodyOrientationReferenceFrame;
+
+   private final RigidBodyTaskspaceControlState taskspaceControlState;
 
    private final QuadrupedForceControllerToolbox controllerToolbox;
 
@@ -59,6 +67,15 @@ public class QuadrupedBodyOrientationManager
       groundPlaneEstimator = controllerToolbox.getGroundPlaneEstimator();
       gains = controller.getGains();
 
+      RigidBody body = controllerToolbox.getFullRobotModel().getBody();
+      RigidBody elevator = controllerToolbox.getFullRobotModel().getElevator();
+      ReferenceFrame baseFrame = controllerToolbox.getReferenceFrames().getCenterOFFourFeetZUpFrame();
+      Collection<ReferenceFrame> trajectoryFrames = controllerToolbox.getTrajectoryFrames();
+
+      taskspaceControlState = new RigidBodyTaskspaceControlState("Orientation", body, elevator, elevator, trajectoryFrames, body.getBodyFixedFrame(), baseFrame,
+                                                                 controllerToolbox.getRuntimeEnvironment().getRobotTimestamp(), null,
+                                                                 controllerToolbox.getRuntimeEnvironment().getGraphicsListRegistry(), registry);
+
       bodyOrientationReference = new FrameQuaternion();
       bodyOrientationReferenceFrame = new OrientationFrame(bodyOrientationReference);
 
@@ -73,6 +90,15 @@ public class QuadrupedBodyOrientationManager
    {
       setpoints.initialize(bodyOrientationEstimate);
       controller.reset();
+   }
+
+   private final FramePose3D tempPose = new FramePose3D();
+
+   public boolean handleBodyOrientationTrajectoryCommands(PelvisOrientationTrajectoryCommand command, FrameQuaternion initialOrientation)
+   {
+      tempPose.setToNaN(initialOrientation.getReferenceFrame());
+      tempPose.setOrientation(initialOrientation);
+      return taskspaceControlState.handleOrientationTrajectoryCommand(command.getSO3Trajectory(), tempPose);
    }
 
    public void compute(FrameQuaternionReadOnly bodyOrientationDesired)

@@ -1,6 +1,8 @@
 package us.ihmc.quadrupedRobotics.input.managers;
 
 import com.google.common.util.concurrent.AtomicDouble;
+import controller_msgs.msg.dds.BodyOrientationTrajectoryMessage;
+import controller_msgs.msg.dds.SO3TrajectoryPointMessage;
 import us.ihmc.communication.packetCommunicator.PacketCommunicator;
 import us.ihmc.euclid.tuple3D.interfaces.Tuple3DReadOnly;
 import us.ihmc.quadrupedRobotics.communication.packets.BodyOrientationPacket;
@@ -19,7 +21,9 @@ public class QuadrupedBodyPoseTeleopManager
    private final AtomicDouble desiredOrientationRoll = new AtomicDouble();
 
    private final ComPositionPacket comPositionPacket = new ComPositionPacket();
-   private final BodyOrientationPacket bodyOrientationPacket = new BodyOrientationPacket();
+//   private final BodyOrientationPacket bodyOrientationPacket = new BodyOrientationPacket();
+   private final BodyOrientationTrajectoryMessage bodyOrientationMessage = new BodyOrientationTrajectoryMessage();
+   private final SO3TrajectoryPointMessage orientationPoint = new SO3TrajectoryPointMessage();
 
    public QuadrupedBodyPoseTeleopManager(double initialCoMHeight, PacketCommunicator packetCommunicator)
    {
@@ -54,8 +58,11 @@ public class QuadrupedBodyPoseTeleopManager
 
       if(!Double.isNaN(desiredYaw))
       {
-         bodyOrientationPacket.orientation.setYawPitchRoll(desiredYaw, desiredPitch, desiredRoll);
-         packetCommunicator.send(bodyOrientationPacket);
+         orientationPoint.getOrientation().setYawPitchRoll(desiredYaw, desiredPitch, desiredRoll);
+         bodyOrientationMessage.getSo3Trajectory().getTaskspaceTrajectoryPoints().add().set(orientationPoint);
+         packetCommunicator.send(bodyOrientationMessage);
+//         bodyOrientationPacket.orientation.setYawPitchRoll(desiredYaw, desiredPitch, desiredRoll);
+//         packetCommunicator.send(bodyOrientationPacket);
       }
    }
 }

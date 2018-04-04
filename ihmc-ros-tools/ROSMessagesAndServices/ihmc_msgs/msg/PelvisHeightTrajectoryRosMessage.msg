@@ -9,7 +9,7 @@
 # kinematics.
 bool enable_user_pelvis_control
 
-# If enableUserPelvisControl is true then enableUserPelvisControlDuringWalking will keep the height
+# If enableUserPelvisControl is true then enableUserBodyControlDuringWalking will keep the height
 # manager in user mode while walking. If this is false the height manager will switch to controller
 # mode when walking.
 bool enable_user_pelvis_control_during_walking

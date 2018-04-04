@@ -15,8 +15,11 @@ import us.ihmc.robotModels.FullQuadrupedRobotModel;
 import us.ihmc.robotics.robotSide.QuadrantDependentList;
 import us.ihmc.robotics.robotSide.RobotQuadrant;
 import us.ihmc.robotics.screwTheory.RigidBody;
+import us.ihmc.sensorProcessing.frames.ReferenceFrameHashCodeResolver;
 import us.ihmc.yoVariables.registry.YoVariableRegistry;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class QuadrupedForceControllerToolbox
@@ -34,6 +37,8 @@ public class QuadrupedForceControllerToolbox
 
    private final QuadrupedTaskSpaceEstimates taskSpaceEstimates = new QuadrupedTaskSpaceEstimates();
    private final FullQuadrupedRobotModel fullRobotModel;
+
+   private final Collection<ReferenceFrame> trajectoryFrames;
 
    private final QuadrantDependentList<YoPlaneContactState> footContactStates = new QuadrantDependentList<>();
    private final List<ContactablePlaneBody> contactablePlaneBodies;
@@ -58,6 +63,10 @@ public class QuadrupedForceControllerToolbox
       dcmPositionEstimator = new DivergentComponentOfMotionEstimator(referenceFrames.getCenterOfMassFrame(), linearInvertedPendulumModel, registry, yoGraphicsListRegistry);
       groundPlaneEstimator = new GroundPlaneEstimator(registry, runtimeEnvironment.getGraphicsListRegistry());
       fallDetector = new QuadrupedFallDetector(taskSpaceEstimator, dcmPositionEstimator, registry);
+
+      ReferenceFrameHashCodeResolver referenceFrameHashCodeResolver = new ReferenceFrameHashCodeResolver(fullRobotModel, referenceFrames);
+      trajectoryFrames = new ArrayList<ReferenceFrame>();
+      trajectoryFrames.addAll(referenceFrameHashCodeResolver.getAllReferenceFrames());
 
       contactablePlaneBodies = runtimeEnvironment.getContactablePlaneBodies();
 
@@ -150,5 +159,10 @@ public class QuadrupedForceControllerToolbox
    public List<ContactablePlaneBody> getContactablePlaneBodies()
    {
       return contactablePlaneBodies;
+   }
+
+   public Collection<ReferenceFrame> getTrajectoryFrames()
+   {
+      return trajectoryFrames;
    }
 }

@@ -60,6 +60,8 @@ public class QuadrupedReferenceFrames extends AbstractQuadrupedReferenceFrames
    private final FramePoint3D centerOfFourHipsFramePoint = new FramePoint3D();
 
    private final PoseReferenceFrame centerOfFourFeetFrameWithBodyRotation;
+   private final ZUpFrame centerOfFourFeetZUpFrameWithBodyRotation;
+
    private final FramePose3D centerOfFourFeetFramePose;
    private final FramePoint3D centerOfFourFeetFramePoint = new FramePoint3D();
 
@@ -161,6 +163,7 @@ public class QuadrupedReferenceFrames extends AbstractQuadrupedReferenceFrames
 
       centerOfFourFeetFramePose = new FramePose3D(bodyFrame);
       centerOfFourFeetFrameWithBodyRotation = new PoseReferenceFrame("centerOfFourFeetFrame", bodyFrame);
+      centerOfFourFeetZUpFrameWithBodyRotation = new ZUpFrame(worldFrame, centerOfFourFeetFrameWithBodyRotation, "centerOfFourFeetZUpFrame");
       supportPolygonCentroidFrameWithNominalRotation = new PoseReferenceFrame("centerOfFourFeetWithSupportPolygonRotation", supportPolygonCentroidWithNominalRotation);
       supportPolygonCentroidZUpFrame = new ZUpFrame(worldFrame, supportPolygonCentroidFrameWithNominalRotation, "centerFootPolygonZUp");
 
@@ -234,6 +237,7 @@ public class QuadrupedReferenceFrames extends AbstractQuadrupedReferenceFrames
 
       centerOfFourFeetFramePose.setPosition(centerOfFourFeetFramePoint);
       centerOfFourFeetFrameWithBodyRotation.setPoseAndUpdate(centerOfFourFeetFramePose);
+      centerOfFourFeetZUpFrameWithBodyRotation.update();
    }
 
    private void updateTripleSupportCentroids()
@@ -379,6 +383,11 @@ public class QuadrupedReferenceFrames extends AbstractQuadrupedReferenceFrames
    public ReferenceFrame getCenterOfFourFeetFrame()
    {
       return centerOfFourFeetFrameWithBodyRotation;
+   }
+
+   public ReferenceFrame getCenterOFFourFeetZUpFrame()
+   {
+      return centerOfFourFeetZUpFrameWithBodyRotation;
    }
 
    /**
