@@ -147,6 +147,9 @@ public class QuadrupedSwingState extends QuadrupedFootState
       desiredSolePosition.setMatchingFrame(desiredPosition);
       desiredSoleLinearVelocity.setMatchingFrame(desiredVelocity);
 
+      feedbackControlCommand.set(desiredPosition, desiredVelocity);
+      feedbackControlCommand.setGains(parameters.getSolePositionGains());
+
       // Detect early touch-down.
       FrameVector3D soleForceEstimate = controllerToolbox.getTaskSpaceEstimates().getSoleVirtualForce(robotQuadrant);
       soleForceEstimate.changeFrame(worldFrame);
@@ -157,16 +160,9 @@ public class QuadrupedSwingState extends QuadrupedFootState
          touchdownTrigger.update(pressureEstimate > parameters.getTouchdownPressureLimitParameter());
       }
 
-      feedbackControlCommand.set(desiredPosition, desiredVelocity);
-      feedbackControlCommand.setGains(parameters.getSolePositionGains());
-
       // Trigger support phase.
       if (currentTime >= touchDownTime)
       {
-         if (stepTransitionCallback != null)
-         {
-            stepTransitionCallback.onTouchDown(robotQuadrant);
-         }
          swingIsDone = true;
       }
    }
@@ -220,12 +216,18 @@ public class QuadrupedSwingState extends QuadrupedFootState
    @Override
    public QuadrupedFootControlModule.FootEvent fireEvent(double timeInState)
    {
+      QuadrupedFootControlModule.FootEvent eventToReturn = null;
       if (swingIsDone)
-         return QuadrupedFootControlModule.FootEvent.TIMEOUT;
+         eventToReturn = QuadrupedFootControlModule.FootEvent.TIMEOUT;
       if (touchdownTrigger.getBooleanValue())
-         return QuadrupedFootControlModule.FootEvent.LOADED;
+         eventToReturn = QuadrupedFootControlModule.FootEvent.LOADED;
 
-      return null;
+      if (eventToReturn != null && stepTransitionCallback != null)
+      {
+
+         stepTransitionCallback.onTouchDown(robotQuadrant);
+      }
+      return eventToReturn;
    }
 
    @Override
