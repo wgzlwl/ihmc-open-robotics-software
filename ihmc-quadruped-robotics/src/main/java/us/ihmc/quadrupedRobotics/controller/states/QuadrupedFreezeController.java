@@ -77,7 +77,6 @@ public class QuadrupedFreezeController implements QuadrupedController
    public void doAction(double timeInState)
    {
       controllerToolbox.update();
-      feetManager.updateSupportPolygon();
 
       feetManager.compute();
    }

@@ -69,7 +69,6 @@ public class QuadrupedDoNothingController implements QuadrupedController
          jointDesiredOutput.setDesiredTorque(0.0);
       }
 
-      feetManager.hideSupportPolygon();
    }
 
    @Override

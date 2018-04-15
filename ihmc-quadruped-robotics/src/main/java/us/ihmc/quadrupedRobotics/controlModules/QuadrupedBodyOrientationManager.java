@@ -17,6 +17,7 @@ import us.ihmc.robotics.controllers.pidGains.GainCoupling;
 import us.ihmc.robotics.controllers.pidGains.implementations.DefaultPID3DGains;
 import us.ihmc.robotics.controllers.pidGains.implementations.ParameterizedPID3DGains;
 import us.ihmc.robotics.math.trajectories.waypoints.MultipleWaypointsOrientationTrajectoryGenerator;
+import us.ihmc.robotics.screwTheory.MovingReferenceFrame;
 import us.ihmc.yoVariables.registry.YoVariableRegistry;
 import us.ihmc.yoVariables.variable.YoDouble;
 import us.ihmc.yoVariables.variable.YoFrameVector3D;
@@ -33,11 +34,13 @@ public class QuadrupedBodyOrientationManager
 
    private final GroundPlaneEstimator groundPlaneEstimator;
 
-   private final ReferenceFrame bodyFrame;
+   private final MovingReferenceFrame bodyFrame;
    private final AxisAngleOrientationController bodyOrientationController;
    private final YoFrameYawPitchRoll yoBodyOrientationSetpoint;
    private final YoFrameVector3D yoBodyAngularVelocitySetpoint;
    private final YoFrameVector3D yoComTorqueFeedforwardSetpoint;
+
+   private final FrameVector3D estimatedBodyAngularVelocity = new FrameVector3D();
 
    private final FrameQuaternion desiredBodyOrientation;
    private final FrameQuaternion desiredBodyOrientationOffset;
@@ -173,17 +176,17 @@ public class QuadrupedBodyOrientationManager
 
    private void doControl()
    {
-      FrameVector3D estimatedVelocity = controllerToolbox.getTaskSpaceEstimates().getBodyAngularVelocity();
+      bodyFrame.getTwistOfFrame().getAngularPart(estimatedBodyAngularVelocity);
 
       // compute body torque
       desiredAngularMomentumRate.setToZero(bodyFrame);
       desiredBodyOrientation.changeFrame(bodyFrame);
       desiredBodyAngularVelocity.changeFrame(bodyFrame);
-      estimatedVelocity.changeFrame(bodyFrame);
+      estimatedBodyAngularVelocity.changeFrame(bodyFrame);
       desiredBodyFeedForwardTorque.changeFrame(bodyFrame);
       bodyOrientationController.setGains(bodyOrientationGainsParameter);
       bodyOrientationController
-            .compute(desiredAngularMomentumRate, desiredBodyOrientation, desiredBodyAngularVelocity, estimatedVelocity, desiredBodyFeedForwardTorque);
+            .compute(desiredAngularMomentumRate, desiredBodyOrientation, desiredBodyAngularVelocity, estimatedBodyAngularVelocity, desiredBodyFeedForwardTorque);
 
    }
 
