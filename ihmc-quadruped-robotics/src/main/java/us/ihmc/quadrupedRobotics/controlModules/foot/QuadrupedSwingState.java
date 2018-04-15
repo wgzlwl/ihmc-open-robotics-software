@@ -2,8 +2,6 @@ package us.ihmc.quadrupedRobotics.controlModules.foot;
 
 import us.ihmc.commonWalkingControlModules.controllerCore.command.feedbackController.FeedbackControlCommand;
 import us.ihmc.commonWalkingControlModules.controllerCore.command.feedbackController.PointFeedbackControlCommand;
-import us.ihmc.commonWalkingControlModules.controllerCore.command.virtualModelControl.VirtualForceCommand;
-import us.ihmc.commonWalkingControlModules.controllerCore.command.virtualModelControl.VirtualModelControlCommand;
 import us.ihmc.euclid.referenceFrame.FramePoint3D;
 import us.ihmc.euclid.referenceFrame.FrameVector3D;
 import us.ihmc.euclid.referenceFrame.ReferenceFrame;
@@ -15,7 +13,7 @@ import us.ihmc.quadrupedRobotics.planning.YoQuadrupedTimedStep;
 import us.ihmc.quadrupedRobotics.planning.trajectory.OneWaypointSwingGenerator;
 import us.ihmc.robotics.dataStructures.parameters.FrameParameterVector3D;
 import us.ihmc.robotics.math.filters.GlitchFilteredYoBoolean;
-import us.ihmc.robotics.math.trajectories.*;
+import us.ihmc.robotics.math.trajectories.MultipleWaypointsBlendedPositionTrajectoryGenerator;
 import us.ihmc.robotics.math.trajectories.waypoints.FrameEuclideanTrajectoryPoint;
 import us.ihmc.robotics.math.trajectories.waypoints.MultipleWaypointsPositionTrajectoryGenerator;
 import us.ihmc.robotics.robotSide.RobotQuadrant;
@@ -60,7 +58,6 @@ public class QuadrupedSwingState extends QuadrupedFootState
    private final YoDouble timestamp;
    private final YoQuadrupedTimedStep currentStepCommand;
 
-   private final VirtualForceCommand virtualForceCommand = new VirtualForceCommand();
    private final PointFeedbackControlCommand feedbackControlCommand = new PointFeedbackControlCommand();
 
    private final MovingReferenceFrame soleFrame;
@@ -68,7 +65,7 @@ public class QuadrupedSwingState extends QuadrupedFootState
    private final QuadrupedControllerToolbox controllerToolbox;
    private final RobotQuadrant robotQuadrant;
 
-   private boolean triggerSupport;
+   private boolean swingIsDone;
 
    private final FrameVector3DReadOnly touchdownVelocity;
 
@@ -132,7 +129,7 @@ public class QuadrupedSwingState extends QuadrupedFootState
       fillAndInitializeTrajectories();
 
       touchdownTrigger.set(false);
-      triggerSupport = false;
+      swingIsDone = false;
    }
 
    @Override
@@ -160,21 +157,8 @@ public class QuadrupedSwingState extends QuadrupedFootState
          touchdownTrigger.update(pressureEstimate > parameters.getTouchdownPressureLimitParameter());
       }
 
-      // Compute sole force.
-      if (touchdownTrigger.getBooleanValue())
-      {
-         double pressureLimit = parameters.getTouchdownPressureLimitParameter();
-         soleForceCommand.changeFrame(worldFrame);
-         soleForceCommand.set(0, 0, -pressureLimit);
-         soleForceCommand.changeFrame(soleFrame);
-         virtualForceCommand.setLinearForce(soleFrame, soleForceCommand);
-
-      }
-      else
-      {
          feedbackControlCommand.set(desiredPosition, desiredVelocity);
          feedbackControlCommand.setGains(parameters.getSolePositionGains());
-      }
 
       // Trigger support phase.
       if (currentTime >= touchDownTime)
@@ -183,7 +167,7 @@ public class QuadrupedSwingState extends QuadrupedFootState
          {
             stepTransitionCallback.onTouchDown(robotQuadrant);
          }
-         triggerSupport = true;
+         swingIsDone = true;
       }
    }
 
@@ -236,7 +220,12 @@ public class QuadrupedSwingState extends QuadrupedFootState
    @Override
    public QuadrupedFootControlModule.FootEvent fireEvent(double timeInState)
    {
-      return triggerSupport ? QuadrupedFootControlModule.FootEvent.TIMEOUT : null;
+      if (swingIsDone)
+         return QuadrupedFootControlModule.FootEvent.TIMEOUT;
+      if (touchdownTrigger.getBooleanValue() && timeInState > 0.5 * currentStepCommand.getTimeInterval().getDuration())
+         return QuadrupedFootControlModule.FootEvent.LOADED;
+
+      return null;
    }
 
    @Override
@@ -244,7 +233,7 @@ public class QuadrupedSwingState extends QuadrupedFootState
    {
       stepCommandIsValid.set(false);
 
-      triggerSupport = false;
+      swingIsDone = false;
 
       desiredSolePosition.setToNaN();
       desiredSoleLinearVelocity.setToNaN();
@@ -252,20 +241,8 @@ public class QuadrupedSwingState extends QuadrupedFootState
    }
 
    @Override
-   public VirtualModelControlCommand<?> getVirtualModelControlCommand()
-   {
-      if (touchdownTrigger.getBooleanValue())
-         return virtualForceCommand;
-      else
-         return null;
-   }
-
-   @Override
    public PointFeedbackControlCommand getFeedbackControlCommand()
    {
-      if (touchdownTrigger.getBooleanValue())
-         return null;
-      else
          return feedbackControlCommand;
    }
 
