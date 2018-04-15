@@ -151,7 +151,7 @@ public class QuadrupedSwingState extends QuadrupedFootState
       feedbackControlCommand.setGains(parameters.getSolePositionGains());
 
       // Detect early touch-down.
-      FrameVector3D soleForceEstimate = controllerToolbox.getTaskSpaceEstimates().getSoleVirtualForce(robotQuadrant);
+      FrameVector3D soleForceEstimate = controllerToolbox.getTaskSpaceEstimates().getSoleContactForce(robotQuadrant);
       soleForceEstimate.changeFrame(worldFrame);
       double pressureEstimate = -soleForceEstimate.getZ();
       double normalizedTimeInSwing = timeInState / currentStepCommand.getTimeInterval().getDuration();
