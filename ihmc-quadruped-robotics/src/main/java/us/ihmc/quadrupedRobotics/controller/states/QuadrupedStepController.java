@@ -137,6 +137,7 @@ public class QuadrupedStepController implements QuadrupedController, QuadrupedSt
    {
       stepMessageHandler.process(balanceManager.getAccumulatedStepAdjustment());
 
+
       // update task space estimates
       controllerToolbox.update();
       feetManager.updateSupportPolygon();
@@ -173,6 +174,9 @@ public class QuadrupedStepController implements QuadrupedController, QuadrupedSt
       }
 
       jointSpaceManager.compute();
+
+      if (onLiftOffTriggered.getBooleanValue() || onTouchDownTriggered.getBooleanValue())
+         balanceManager.initializeOnContactChange(contactStates);
 
       // update accumulated step adjustment
       if (onLiftOffTriggered.getBooleanValue())

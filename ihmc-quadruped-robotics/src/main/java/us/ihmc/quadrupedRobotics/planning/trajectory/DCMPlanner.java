@@ -44,7 +44,9 @@ public class DCMPlanner
 
    private final QuadrantDependentList<MovingReferenceFrame> soleFrames;
 
-   private final YoDouble robotTimestamp;
+   private final YoDouble time;
+   private final YoDouble timeInState = new YoDouble("dcmPlannerTimeInState", registry);
+   private final YoDouble timeEnteringState = new YoDouble("dcmPlannerTimeEnteringState", registry);
    private final YoDouble comHeight = new YoDouble("comHeightForPlanning", registry);
    private final YoInteger numberOfStepsInPlanner = new YoInteger("numberOfStepsInPlanner", registry);
 
@@ -59,7 +61,7 @@ public class DCMPlanner
    public DCMPlanner(double gravity, double nominalHeight, YoDouble robotTimestamp, ReferenceFrame supportFrame,
                      QuadrantDependentList<MovingReferenceFrame> soleFrames, YoVariableRegistry parentRegistry, YoGraphicsListRegistry yoGraphicsListRegistry)
    {
-      this.robotTimestamp = robotTimestamp;
+      this.time = robotTimestamp;
       this.supportFrame = supportFrame;
       this.soleFrames = soleFrames;
       this.dcmTransitionTrajectory = new FrameTrajectory3D(6, supportFrame);
@@ -106,6 +108,8 @@ public class DCMPlanner
 
    public void initializeForStanding()
    {
+      timeEnteringState.set(time.getDoubleValue());
+
       isStanding.set(true);
       piecewiseConstantCopTrajectory.resetVariables();
       dcmTrajectory.resetVariables();
@@ -115,7 +119,9 @@ public class DCMPlanner
    {
       isStanding.set(false);
 
-      double currentTime = robotTimestamp.getDoubleValue();
+      double currentTime = time.getDoubleValue();
+      timeEnteringState.set(currentTime);
+
       boolean isCurrentPlanValid = stepSequence.get(numberOfStepsInPlanner.getIntegerValue() - 1).getTimeInterval().getEndTime() > currentTime;
 
       if (isCurrentPlanValid)
@@ -128,10 +134,19 @@ public class DCMPlanner
       }
    }
 
+   public void initializeOnContactChange(QuadrantDependentList<ContactState> currentContactStates)
+   {
+      double currentTime = time.getDoubleValue();
+      timeEnteringState.set(currentTime);
+
+      boolean isCurrentPlanValid = stepSequence.get(numberOfStepsInPlanner.getIntegerValue() - 1).getTimeInterval().getEndTime() > currentTime;
+
+   }
+
    private void computeDcmTrajectory(QuadrantDependentList<ContactState> currentContactStates)
    {
       // compute piecewise constant center of pressure plan
-      double currentTime = robotTimestamp.getDoubleValue();
+      double currentTime = time.getDoubleValue();
       timedContactSequence.update(stepSequence, soleFrames, currentContactStates, currentTime);
       piecewiseConstantCopTrajectory.initializeTrajectory(timedContactSequence);
 
@@ -150,7 +165,7 @@ public class DCMPlanner
    private void computeTransitionTrajectory()
    {
       double transitionEndTime = piecewiseConstantCopTrajectory.getTimeAtStartOfInterval(1);
-      double transitionStartTime = Math.max(robotTimestamp.getDoubleValue(), transitionEndTime - initialTransitionDurationParameter.getValue());
+      double transitionStartTime = Math.max(time.getDoubleValue(), transitionEndTime - initialTransitionDurationParameter.getValue());
       dcmTrajectory.computeTrajectory(transitionEndTime);
       dcmTrajectory.getPosition(finalDesiredDCM);
 
@@ -166,8 +181,11 @@ public class DCMPlanner
    public void computeDcmSetpoints(QuadrantDependentList<ContactState> currentContactStates, FixedFramePoint3DBasics desiredDCMPositionToPack,
                                    FixedFrameVector3DBasics desiredDCMVelocityToPack)
    {
+      timeInState.set(time.getDoubleValue() - timeEnteringState.getDoubleValue());
+
       if (isStanding.getBooleanValue())
       {
+
          // update desired dcm position
          desiredDCMPosition.setToZero(supportFrame);
          desiredDCMVelocity.setToZero(supportFrame);
@@ -176,18 +194,18 @@ public class DCMPlanner
       {
          computeDcmTrajectory(currentContactStates);
 
-         double currentTime = robotTimestamp.getDoubleValue();
+         double currentTime = time.getDoubleValue();
          if (currentTime <= dcmTransitionTrajectory.getFinalTime())
          {
             computeTransitionTrajectory();
 
-            dcmTransitionTrajectory.compute(robotTimestamp.getDoubleValue());
+            dcmTransitionTrajectory.compute(currentTime);
             dcmTransitionTrajectory.getFramePosition(desiredDCMPosition);
             dcmTransitionTrajectory.getFrameVelocity(desiredDCMVelocity);
          }
          else
          {
-            dcmTrajectory.computeTrajectory(robotTimestamp.getDoubleValue());
+            dcmTrajectory.computeTrajectory(currentTime);
             dcmTrajectory.getPosition(desiredDCMPosition);
             dcmTrajectory.getVelocity(desiredDCMVelocity);
          }

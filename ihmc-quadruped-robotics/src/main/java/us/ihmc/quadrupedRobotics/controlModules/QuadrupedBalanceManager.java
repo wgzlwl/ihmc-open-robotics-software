@@ -261,7 +261,11 @@ public class QuadrupedBalanceManager
    {
       initialize();
       dcmPlanner.initializeForStepping(contactStates, dcmPositionEstimate);
+   }
 
+   public void initializeOnContactChange(QuadrantDependentList<ContactState> contactStates)
+   {
+      dcmPlanner.initializeOnContactChange(contactStates);
    }
 
    public void compute(QuadrantDependentList<ContactState> contactStates)

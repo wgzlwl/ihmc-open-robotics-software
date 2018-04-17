@@ -1,7 +1,10 @@
 package us.ihmc.quadrupedRobotics.planning.trajectory;
 
+import gnu.trove.list.array.TDoubleArrayList;
+import gnu.trove.list.array.TIntArrayList;
 import org.apache.commons.lang3.mutable.MutableDouble;
 
+import us.ihmc.commons.MathTools;
 import us.ihmc.euclid.referenceFrame.FramePoint3D;
 import us.ihmc.euclid.referenceFrame.FrameVector3D;
 import us.ihmc.euclid.referenceFrame.ReferenceFrame;
@@ -25,7 +28,7 @@ public class PiecewiseReverseDcmTrajectory
    private int numberOfSteps;
    private final double gravity;
    private double comHeight;
-   private final double[] timesAtStartOfSteps;
+   private final TDoubleArrayList timesAtStartOfSteps = new TDoubleArrayList();
    private final List<YoFramePoint3D> dcmCornerPoints = new ArrayList<>();
    private final List<YoFramePoint3D> vrpCornerPoints = new ArrayList<>();
 
@@ -46,7 +49,6 @@ public class PiecewiseReverseDcmTrajectory
       this.comHeight = Math.max(comHeight, 0.001);
 
       numberOfSteps = maxSteps;
-      timesAtStartOfSteps = new double[maxSteps + 1];
       for (int i = 0; i < maxSteps + 1; i++)
       {
          dcmCornerPoints.add(new YoFramePoint3D("dcmCornerPoint" + i, worldFrame, registry));
@@ -113,13 +115,14 @@ public class PiecewiseReverseDcmTrajectory
       this.numberOfSteps = numberOfSteps;
 
       // compute dcm position at start of each step assuming a piecewise constant vrp trajectory
+      this.timesAtStartOfSteps.clear();
       for (int i = 0; i < numberOfSteps; i++)
       {
-         this.timesAtStartOfSteps[i] = timesAtStartOfSteps.get(i).doubleValue();
+         this.timesAtStartOfSteps.add(timesAtStartOfSteps.get(i).doubleValue());
          vrpCornerPoints.get(i).setMatchingFrame(cmpPositionAtStartOfSteps.get(i));
          vrpCornerPoints.get(i).addZ(comHeight);
       }
-      this.timesAtStartOfSteps[numberOfSteps] = finalTime;
+      this.timesAtStartOfSteps.add(finalTime);
 
       dcmCornerPoints.get(numberOfSteps).setMatchingFrame(finalDcmPosition);
 
@@ -127,11 +130,11 @@ public class PiecewiseReverseDcmTrajectory
       {
          dcmCornerPoints.get(i).set(dcmCornerPoints.get(i + 1));
          dcmCornerPoints.get(i).sub(vrpCornerPoints.get(i));
-         dcmCornerPoints.get(i).scale(Math.exp(-naturalFrequency * (this.timesAtStartOfSteps[i + 1] - this.timesAtStartOfSteps[i])));
+         dcmCornerPoints.get(i).scale(Math.exp(-naturalFrequency * (this.timesAtStartOfSteps.get(i + 1) - this.timesAtStartOfSteps.get(i))));
          dcmCornerPoints.get(i).add(vrpCornerPoints.get(i));
       }
       this.initialized = true;
-      computeTrajectory(this.timesAtStartOfSteps[0]);
+      computeTrajectory(this.timesAtStartOfSteps.get(0));
    }
 
    public void initializeTrajectory(double initialTime, FramePoint3DReadOnly initialCMPPosition, double finalTime, FramePoint3D finalDcmPosition)
@@ -146,19 +149,26 @@ public class PiecewiseReverseDcmTrajectory
       if (!initialized)
          throw new RuntimeException("trajectory must be initialized before calling computeTrajectory");
 
+      /*
       // compute constant virtual repellent point trajectory between steps
-      currentTime = Math.min(Math.max(currentTime, timesAtStartOfSteps[0]), timesAtStartOfSteps[numberOfSteps]);
+      double timeInState = currentTime - timesAtStartOfSteps.get(0);
+      double naturalFrequency = Math.sqrt(gravity / comHeight);
+      dcmPosition.sub(dcmCornerPoints.get(0), vrpCornerPoints.get(0));
+      dcmPosition.scale(Math.exp(naturalFrequency * timeInState));
+      dcmPosition.add(vrpCornerPoints.get(0));
+      dcmVelocity.sub(dcmPosition, vrpCornerPoints.get(0));
+      dcmVelocity.scale(naturalFrequency);
+      */
+      currentTime = MathTools.clamp(currentTime, timesAtStartOfSteps.get(0), timesAtStartOfSteps.get(numberOfSteps));
       double naturalFrequency = Math.sqrt(gravity / comHeight);
       for (int i = numberOfSteps - 1; i >= 0; i--)
       {
-         if (currentTime >= timesAtStartOfSteps[i])
+         if (currentTime >= timesAtStartOfSteps.get(i))
          {
-            dcmPosition.set(dcmCornerPoints.get(i));
-            dcmPosition.sub(vrpCornerPoints.get(i));
-            dcmPosition.scale(Math.exp(naturalFrequency * (currentTime - timesAtStartOfSteps[i])));
+            dcmPosition.sub(dcmCornerPoints.get(i), vrpCornerPoints.get(i));
+            dcmPosition.scale(Math.exp(naturalFrequency * (currentTime - timesAtStartOfSteps.get(i))));
             dcmPosition.add(vrpCornerPoints.get(i));
-            dcmVelocity.set(dcmPosition);
-            dcmVelocity.sub(vrpCornerPoints.get(i));
+            dcmVelocity.sub(dcmPosition, vrpCornerPoints.get(i));
             dcmVelocity.scale(naturalFrequency);
             break;
          }
@@ -172,7 +182,7 @@ public class PiecewiseReverseDcmTrajectory
 
    public double getStartTime()
    {
-      return timesAtStartOfSteps[0];
+      return timesAtStartOfSteps.get(0);
    }
 
    public void getPosition(FramePoint3D dcmPositionToPack)
