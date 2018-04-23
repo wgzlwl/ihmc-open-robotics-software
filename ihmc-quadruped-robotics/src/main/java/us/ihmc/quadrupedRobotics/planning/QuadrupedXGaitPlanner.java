@@ -4,7 +4,6 @@ import us.ihmc.commons.MathTools;
 import us.ihmc.euclid.referenceFrame.FramePoint3D;
 import us.ihmc.euclid.referenceFrame.FramePose3D;
 import us.ihmc.euclid.referenceFrame.ReferenceFrame;
-import us.ihmc.euclid.referenceFrame.interfaces.FramePose3DReadOnly;
 import us.ihmc.euclid.tuple3D.Vector3D;
 import us.ihmc.euclid.tuple3D.interfaces.Vector3DReadOnly;
 import us.ihmc.quadrupedRobotics.planning.stepStream.QuadrupedPlanarFootstepPlan;
@@ -18,7 +17,6 @@ public class QuadrupedXGaitPlanner
 
    private final QuadrantDependentList<FramePoint3D> xGaitRectangleVertices;
    private final FramePose3D xGaitRectanglePose;
-   private final FramePose3D currentXGaitRectanglePose;
    private final PoseReferenceFrame xGaitRectangleFrame;
    private final EndDependentList<QuadrupedTimedStep> pastSteps;
 
@@ -26,7 +24,6 @@ public class QuadrupedXGaitPlanner
    {
       xGaitRectangleVertices = new QuadrantDependentList<>();
       xGaitRectanglePose = new FramePose3D(worldFrame);
-      currentXGaitRectanglePose = new FramePose3D(worldFrame);
       xGaitRectangleFrame = new PoseReferenceFrame("xGaitRectangleFrame", worldFrame);
       for (RobotQuadrant robotQuadrant : RobotQuadrant.values)
       {
@@ -41,9 +38,9 @@ public class QuadrupedXGaitPlanner
                                   FramePoint3D currentSupportCentroid, double currentTime, double currentYaw, QuadrupedXGaitSettingsReadOnly xGaitSettings)
    {
       currentSupportCentroid.changeFrame(worldFrame);
-      currentXGaitRectanglePose.setPosition(currentSupportCentroid);
-      currentXGaitRectanglePose.setOrientationYawPitchRoll(currentYaw, 0, 0);
-      xGaitRectangleFrame.setPoseAndUpdate(currentXGaitRectanglePose);
+      xGaitRectanglePose.setPosition(currentSupportCentroid);
+      xGaitRectanglePose.setOrientationYawPitchRoll(currentYaw, 0, 0);
+      xGaitRectangleFrame.setPoseAndUpdate(xGaitRectanglePose);
 
       // initialize nominal support rectangle
       for (RobotQuadrant robotQuadrant : RobotQuadrant.values)
@@ -89,7 +86,7 @@ public class QuadrupedXGaitPlanner
 
          // compute xGait rectangle pose at end of step
          double deltaTime = thisStepEndTime - currentTime;
-         extrapolatePose(xGaitRectanglePose, currentXGaitRectanglePose, planarVelocity, deltaTime);
+         extrapolatePose(xGaitRectanglePose, planarVelocity, deltaTime);
          xGaitRectangleFrame.setPoseAndUpdate(xGaitRectanglePose);
          step.setStepYaw(xGaitRectanglePose.getYaw());
 
@@ -119,10 +116,10 @@ public class QuadrupedXGaitPlanner
          latestStep = currentSteps.get(RobotEnd.FRONT);
 
       currentSupportCentroid.changeFrame(worldFrame);
-      currentXGaitRectanglePose.setToZero(worldFrame);
-      currentXGaitRectanglePose.setPosition(currentSupportCentroid);
-      currentXGaitRectanglePose.setOrientationYawPitchRoll(currentYaw, 0, 0);
-      xGaitRectangleFrame.setPoseAndUpdate(currentXGaitRectanglePose);
+      xGaitRectanglePose.setToZero(worldFrame);
+      xGaitRectanglePose.setPosition(currentSupportCentroid);
+      xGaitRectanglePose.setOrientationYawPitchRoll(currentYaw, 0, 0);
+      xGaitRectangleFrame.setPoseAndUpdate(xGaitRectanglePose);
 
       // initialize nominal support rectangle
       for (RobotQuadrant robotQuadrant : RobotQuadrant.values)
@@ -132,18 +129,18 @@ public class QuadrupedXGaitPlanner
          xGaitRectangleVertices.get(robotQuadrant).setY(robotQuadrant.getSide().negateIfRightSide(xGaitSettings.getStanceWidth() / 2.0));
       }
 
-      PreallocatedList<QuadrupedTimedOrientedStep> plannedSteps = footstepPlan.getPlannedSteps();
-      plannedSteps.clear();
+      PreallocatedList<QuadrupedTimedOrientedStep> steps = footstepPlan.getPlannedSteps();
+      steps.clear();
 
       // compute step quadrants and time intervals
       RobotEnd thisStepEnd = latestStep.getRobotQuadrant().getOppositeEnd();
       pastSteps.set(RobotEnd.FRONT, currentSteps.get(RobotEnd.FRONT));
       pastSteps.set(RobotEnd.HIND, currentSteps.get(RobotEnd.HIND));
 
-      for (int i = 0; i < plannedSteps.capacity(); i++)
+      for (int i = 0; i < steps.capacity(); i++)
       {
-         plannedSteps.add();
-         QuadrupedTimedStep thisStep = plannedSteps.get(i);
+         steps.add();
+         QuadrupedTimedStep thisStep = steps.get(i);
          QuadrupedTimedStep pastStepOnSameEnd = pastSteps.get(thisStepEnd);
          QuadrupedTimedStep pastStepOnOppositeEnd = pastSteps.get(thisStepEnd.getOppositeEnd());
 
@@ -156,30 +153,33 @@ public class QuadrupedXGaitPlanner
          thisStepEnd = thisStepEnd.getOppositeEnd();
       }
 
+      double localTime = currentTime;
+
       // compute step goal positions and ground clearances
-      for (int i = 0; i < plannedSteps.size(); i++)
+      for (int i = 0; i < steps.size(); i++)
       {
          // compute xGait rectangle pose at end of step
-         double deltaTime = plannedSteps.get(i).getTimeInterval().getEndTime() - currentTime;
-         extrapolatePose(xGaitRectanglePose, currentXGaitRectanglePose, desiredVelocity, deltaTime);
+         double deltaTime = steps.get(i).getTimeInterval().getEndTime() - localTime;
+         extrapolatePose(xGaitRectanglePose, desiredVelocity, deltaTime);
          xGaitRectangleFrame.setPoseAndUpdate(xGaitRectanglePose);
 
          // compute step goal position by sampling the corner position of the xGait rectangle at touchdown
-         RobotQuadrant stepQuadrant = plannedSteps.get(i).getRobotQuadrant();
-         plannedSteps.get(i).setGoalPosition(xGaitRectangleVertices.get(stepQuadrant));
-         plannedSteps.get(i).setStepYaw(xGaitRectanglePose.getYaw());
+         RobotQuadrant stepQuadrant = steps.get(i).getRobotQuadrant();
+         steps.get(i).setGoalPosition(xGaitRectangleVertices.get(stepQuadrant));
+         steps.get(i).setStepYaw(xGaitRectanglePose.getYaw());
 
          // compute step ground clearance
-         plannedSteps.get(i).setGroundClearance(xGaitSettings.getStepGroundClearance());
+         steps.get(i).setGroundClearance(xGaitSettings.getStepGroundClearance());
+
+         localTime = steps.get(i).getTimeInterval().getEndTime();
       }
    }
 
    private final Vector3D translation = new Vector3D();
 
-   private void extrapolatePose(FramePose3D poseToExtrapolateToPack, FramePose3DReadOnly basePose, Vector3DReadOnly planarVelocity, double deltaTime)
+   private void extrapolatePose(FramePose3D poseToExtrapolateToPack, Vector3DReadOnly planarVelocity, double deltaTime)
    {
-      poseToExtrapolateToPack.setIncludingFrame(basePose);
-      double currentYaw = basePose.getYaw();
+      double currentYaw = poseToExtrapolateToPack.getYaw();
 
       // initialize forward, lateral, and rotational velocity in pose frame
       double forwardVelocity = planarVelocity.getX();
