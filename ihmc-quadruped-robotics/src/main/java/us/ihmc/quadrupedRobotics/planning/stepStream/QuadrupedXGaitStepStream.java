@@ -119,8 +119,9 @@ public class QuadrupedXGaitStepStream
       supportCentroid.changeFrame(worldFrame);
 
       updateXGaitSettings();
+//      supportCentroid.setToZero(supportFrame);
       double currentYaw = bodyYaw.getDoubleValue();
-      xGaitStepPlanner.computeOnlinePlan(footstepPlan, desiredPlanarVelocity, currentTime, currentYaw, supportCentroid.getZ(), xGaitSettings);
+      xGaitStepPlanner.computeOnlinePlan(footstepPlan, desiredPlanarVelocity, supportCentroid, currentTime, currentYaw, xGaitSettings);
    }
 
    public void setDesiredPlanarVelocity(double desiredVelocityX, double desiredVelocityY, double desiredVelocityYaw)
