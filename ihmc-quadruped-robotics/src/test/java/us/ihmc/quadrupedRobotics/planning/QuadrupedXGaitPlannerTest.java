@@ -94,6 +94,8 @@ public class QuadrupedXGaitPlannerTest
       xGaitSettings.setEndDoubleSupportDuration(0);
       xGaitSettings.setEndPhaseShift(90);
 
+      FramePoint3D supportCentroid = new FramePoint3D();
+
       Vector3D planarVelocity = new Vector3D(1.0, 0.0, 0.0);
       double currentTime = 0.125;
       double currentYaw = 0.0;
@@ -118,7 +120,7 @@ public class QuadrupedXGaitPlannerTest
       currentHindStep.setGroundClearance(currentHeight);
       footstepPlan.getCurrentSteps().set(RobotEnd.FRONT, currentFrontStep);
 
-      xGaitPlanner.computeOnlinePlan(footstepPlan, planarVelocity, currentTime, currentYaw, currentHeight, xGaitSettings);
+      xGaitPlanner.computeOnlinePlan(footstepPlan, planarVelocity, supportCentroid, currentTime, currentYaw, xGaitSettings);
 
       ArrayList<QuadrupedTimedStep> nominalSteps = new ArrayList<>();
       for (int i = 0; i < 2; i++)
