@@ -3,6 +3,7 @@ package us.ihmc.quadrupedRobotics.planning.stepStream;
 import us.ihmc.euclid.referenceFrame.FramePoint3D;
 import us.ihmc.euclid.referenceFrame.ReferenceFrame;
 import us.ihmc.euclid.tuple3D.Vector3D;
+import us.ihmc.quadrupedRobotics.estimator.GroundPlaneEstimator;
 import us.ihmc.quadrupedRobotics.estimator.referenceFrames.QuadrupedReferenceFrames;
 import us.ihmc.quadrupedRobotics.planning.QuadrupedTimedStep;
 import us.ihmc.quadrupedRobotics.planning.QuadrupedXGaitPlanner;
@@ -53,6 +54,7 @@ public class QuadrupedXGaitStepStream
       this.controlDT = controlDT;
       this.timestamp = timestamp;
       this.previousTimestamp = new YoDouble("previousTimestamp", registry);
+//      GroundPlaneEstimator groundPlaneEstimator = new GroundPlaneEstimator();
 
       this.bodyYaw = new YoDouble("bodyYaw", registry);
       this.bodyOrientation = new YoFrameYawPitchRoll("bodyOrientation", worldFrame, registry);
@@ -114,14 +116,10 @@ public class QuadrupedXGaitStepStream
       // update xgait current steps
       footstepPlan.updateCurrentSteps(timestamp.getDoubleValue());
 
-      // update xgait preview steps
-      supportCentroid.setToZero(supportFrame);
-      supportCentroid.changeFrame(worldFrame);
 
       updateXGaitSettings();
-//      supportCentroid.setToZero(supportFrame);
       double currentYaw = bodyYaw.getDoubleValue();
-      xGaitStepPlanner.computeOnlinePlan(footstepPlan, desiredPlanarVelocity, supportCentroid, currentTime, currentYaw, xGaitSettings);
+      xGaitStepPlanner.computeOnlinePlan(footstepPlan, desiredPlanarVelocity, supportFrame, currentTime, currentYaw, xGaitSettings);
    }
 
    public void setDesiredPlanarVelocity(double desiredVelocityX, double desiredVelocityY, double desiredVelocityYaw)

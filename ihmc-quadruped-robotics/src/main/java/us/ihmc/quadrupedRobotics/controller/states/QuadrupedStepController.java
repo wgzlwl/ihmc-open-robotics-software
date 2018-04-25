@@ -1,6 +1,5 @@
 package us.ihmc.quadrupedRobotics.controller.states;
 
-import us.ihmc.euclid.referenceFrame.FrameVector3D;
 import us.ihmc.quadrupedRobotics.controlModules.QuadrupedBalanceManager;
 import us.ihmc.quadrupedRobotics.controlModules.QuadrupedBodyOrientationManager;
 import us.ihmc.quadrupedRobotics.controlModules.QuadrupedControlManagerFactory;

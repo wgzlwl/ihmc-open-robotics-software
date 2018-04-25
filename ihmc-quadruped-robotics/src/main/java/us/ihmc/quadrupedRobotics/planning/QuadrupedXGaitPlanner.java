@@ -34,6 +34,7 @@ public class QuadrupedXGaitPlanner
       pastSteps.put(RobotEnd.HIND, new QuadrupedTimedStep());
    }
 
+   // fixme this is getting initialized incorrectly
    public void computeInitialPlan(QuadrupedPlanarFootstepPlan footstepPlan, Vector3D planarVelocity, RobotQuadrant initialStepQuadrant,
                                   FramePoint3D currentSupportCentroid, double currentTime, double currentYaw, QuadrupedXGaitSettingsReadOnly xGaitSettings)
    {
@@ -103,7 +104,7 @@ public class QuadrupedXGaitPlanner
       }
    }
 
-   public void computeOnlinePlan(QuadrupedPlanarFootstepPlan footstepPlan, Vector3D desiredVelocity, FramePoint3D currentSupportCentroid, double currentTime,
+   public void computeOnlinePlan(QuadrupedPlanarFootstepPlan footstepPlan, Vector3D desiredVelocity, ReferenceFrame supportFrame, double currentTime,
                                  double currentYaw, QuadrupedXGaitSettingsReadOnly xGaitSettings)
    {
       // initialize latest step
@@ -115,9 +116,8 @@ public class QuadrupedXGaitPlanner
       else
          latestStep = currentSteps.get(RobotEnd.FRONT);
 
-      currentSupportCentroid.changeFrame(worldFrame);
-      xGaitRectanglePose.setToZero(worldFrame);
-      xGaitRectanglePose.setPosition(currentSupportCentroid);
+      xGaitRectanglePose.setToZero(supportFrame);
+      xGaitRectanglePose.changeFrame(worldFrame);
       xGaitRectanglePose.setOrientationYawPitchRoll(currentYaw, 0, 0);
       xGaitRectangleFrame.setPoseAndUpdate(xGaitRectanglePose);
 
@@ -155,6 +155,7 @@ public class QuadrupedXGaitPlanner
 
       double localTime = currentTime;
 
+      // fixme this has a bug when walking, and doesn't account well for transfer
       // compute step goal positions and ground clearances
       for (int i = 0; i < steps.size(); i++)
       {
