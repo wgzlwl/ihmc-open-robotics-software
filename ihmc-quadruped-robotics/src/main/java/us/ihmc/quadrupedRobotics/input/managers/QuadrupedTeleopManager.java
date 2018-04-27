@@ -69,6 +69,7 @@ public class QuadrupedTeleopManager
       packetCommunicator.attachListener(QuadrupedControllerStateChangeMessage.class, controllerStateChangeMessage::set);
       packetCommunicator.attachListener(QuadrupedSteppingStateChangeMessage.class, steppingStateChangeMessage::set);
       packetCommunicator.attachListener(RobotConfigurationData.class, packet -> timestampNanos.set(packet.timestamp_));
+      packetCommunicator.attachListener(QuadrupedFootstepStatusMessage.class, stepStream);
 
       parentRegistry.addChild(registry);
    }

@@ -1,12 +1,16 @@
 package us.ihmc.quadrupedRobotics.planning.stepStream;
 
+import controller_msgs.msg.dds.QuadrupedFootstepStatusMessage;
+import us.ihmc.communication.net.PacketConsumer;
 import us.ihmc.euclid.referenceFrame.ReferenceFrame;
+import us.ihmc.euclid.tuple3D.Point3D;
 import us.ihmc.euclid.tuple3D.Vector3D;
 import us.ihmc.quadrupedRobotics.estimator.referenceFrames.QuadrupedReferenceFrames;
 import us.ihmc.quadrupedRobotics.planning.QuadrupedTimedStep;
 import us.ihmc.quadrupedRobotics.planning.QuadrupedXGaitPlanner;
 import us.ihmc.quadrupedRobotics.planning.bodyPath.QuadrupedPlanarBodyPathProvider;
 import us.ihmc.quadrupedRobotics.providers.YoQuadrupedXGaitSettings;
+import us.ihmc.robotics.robotSide.RobotEnd;
 import us.ihmc.robotics.robotSide.RobotQuadrant;
 import us.ihmc.yoVariables.parameters.DoubleParameter;
 import us.ihmc.yoVariables.registry.YoVariableRegistry;
@@ -14,7 +18,7 @@ import us.ihmc.yoVariables.variable.YoDouble;
 
 import java.util.List;
 
-public class QuadrupedXGaitStepStream
+public class QuadrupedXGaitStepStream implements PacketConsumer<QuadrupedFootstepStatusMessage>
 {
    private static int NUMBER_OF_PREVIEW_STEPS = 16;
 
@@ -100,5 +104,16 @@ public class QuadrupedXGaitStepStream
    public QuadrupedPlanarFootstepPlan getFootstepPlan()
    {
       return footstepPlan;
+   }
+
+   @Override
+   public void receivedPacket(QuadrupedFootstepStatusMessage packet)
+   {
+      if(packet.getFootstepStatus() == QuadrupedFootstepStatusMessage.FOOTSTEP_STATUS_STARTED)
+      {
+         RobotEnd end = RobotQuadrant.fromByte((byte) packet.getFootstepQuadrant()).getEnd();
+         Point3D touchdownPosition = packet.getDesiredTouchdownPositionInWorld();
+         footstepPlan.getCurrentSteps().get(end).setGoalPosition(touchdownPosition);
+      }
    }
 }
