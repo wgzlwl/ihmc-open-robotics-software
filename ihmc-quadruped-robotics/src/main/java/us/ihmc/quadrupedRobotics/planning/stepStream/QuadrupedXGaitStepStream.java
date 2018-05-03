@@ -1,12 +1,10 @@
 package us.ihmc.quadrupedRobotics.planning.stepStream;
 
-import us.ihmc.euclid.referenceFrame.ReferenceFrame;
 import us.ihmc.euclid.tuple3D.Vector3D;
-import us.ihmc.quadrupedRobotics.estimator.referenceFrames.QuadrupedReferenceFrames;
 import us.ihmc.quadrupedRobotics.planning.QuadrupedTimedStep;
 import us.ihmc.quadrupedRobotics.planning.QuadrupedXGaitPlanner;
 import us.ihmc.quadrupedRobotics.planning.bodyPath.QuadrupedPlanarBodyPathProvider;
-import us.ihmc.quadrupedRobotics.planning.chooser.footstepChooser.QuadrupedStepSnapper;
+import us.ihmc.quadrupedRobotics.planning.chooser.footstepChooser.PointFootSnapper;
 import us.ihmc.quadrupedRobotics.providers.YoQuadrupedXGaitSettings;
 import us.ihmc.robotics.robotSide.RobotQuadrant;
 import us.ihmc.yoVariables.parameters.DoubleParameter;
@@ -96,7 +94,7 @@ public class QuadrupedXGaitStepStream
       return footstepPlan;
    }
 
-   public void setStepSnapper(QuadrupedStepSnapper snapper)
+   public void setStepSnapper(PointFootSnapper snapper)
    {
       xGaitStepPlanner.setStepSnapper(snapper);
    }
