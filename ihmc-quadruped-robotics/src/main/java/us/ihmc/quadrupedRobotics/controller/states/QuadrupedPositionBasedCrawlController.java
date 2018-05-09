@@ -1,17 +1,8 @@
 package us.ihmc.quadrupedRobotics.controller.states;
 
-import java.awt.Color;
-import java.util.Random;
-
 import gnu.trove.list.array.TDoubleArrayList;
 import us.ihmc.commons.MathTools;
-import us.ihmc.euclid.referenceFrame.FrameLineSegment2D;
-import us.ihmc.euclid.referenceFrame.FramePoint2D;
-import us.ihmc.euclid.referenceFrame.FramePoint3D;
-import us.ihmc.euclid.referenceFrame.FramePose3D;
-import us.ihmc.euclid.referenceFrame.FrameVector2D;
-import us.ihmc.euclid.referenceFrame.FrameVector3D;
-import us.ihmc.euclid.referenceFrame.ReferenceFrame;
+import us.ihmc.euclid.referenceFrame.*;
 import us.ihmc.euclid.referenceFrame.interfaces.FramePoint3DReadOnly;
 import us.ihmc.euclid.referenceFrame.interfaces.FrameVector3DReadOnly;
 import us.ihmc.euclid.referenceFrame.interfaces.FrameVertex3DSupplier;
@@ -59,7 +50,10 @@ import us.ihmc.robotics.robotSide.QuadrantDependentList;
 import us.ihmc.robotics.robotSide.RecyclingQuadrantDependentList;
 import us.ihmc.robotics.robotSide.RobotQuadrant;
 import us.ihmc.robotics.robotSide.SideDependentList;
-import us.ihmc.robotics.screwTheory.*;
+import us.ihmc.robotics.screwTheory.CenterOfMassJacobian;
+import us.ihmc.robotics.screwTheory.FloatingInverseDynamicsJoint;
+import us.ihmc.robotics.screwTheory.OneDoFJoint;
+import us.ihmc.robotics.screwTheory.Twist;
 import us.ihmc.robotics.sensors.FootSwitchInterface;
 import us.ihmc.robotics.stateMachine.core.State;
 import us.ihmc.robotics.stateMachine.core.StateMachine;
@@ -69,19 +63,13 @@ import us.ihmc.robotics.time.ExecutionTimer;
 import us.ihmc.robotics.trajectories.MinimumJerkTrajectory;
 import us.ihmc.sensorProcessing.outputData.JointDesiredOutput;
 import us.ihmc.sensorProcessing.outputData.JointDesiredOutputList;
+import us.ihmc.sensorProcessing.outputData.JointDesiredOutputListReadOnly;
 import us.ihmc.yoVariables.listener.VariableChangedListener;
 import us.ihmc.yoVariables.registry.YoVariableRegistry;
-import us.ihmc.yoVariables.variable.YoBoolean;
-import us.ihmc.yoVariables.variable.YoDouble;
-import us.ihmc.yoVariables.variable.YoEnum;
-import us.ihmc.yoVariables.variable.YoFrameConvexPolygon2D;
-import us.ihmc.yoVariables.variable.YoFrameLineSegment2D;
-import us.ihmc.yoVariables.variable.YoFramePoint2D;
-import us.ihmc.yoVariables.variable.YoFramePoint3D;
-import us.ihmc.yoVariables.variable.YoFramePoseUsingYawPitchRoll;
-import us.ihmc.yoVariables.variable.YoFrameVector3D;
-import us.ihmc.yoVariables.variable.YoFrameYawPitchRoll;
-import us.ihmc.yoVariables.variable.YoVariable;
+import us.ihmc.yoVariables.variable.*;
+
+import java.awt.*;
+import java.util.Random;
 
 public class QuadrupedPositionBasedCrawlController implements QuadrupedController
 {
@@ -363,7 +351,7 @@ public class QuadrupedPositionBasedCrawlController implements QuadrupedControlle
                                                 QuadrupedPhysicalProperties physicalProperties,
                                                 QuadrupedPositionBasedCrawlControllerParameters crawlControllerParameters)
    {
-      this.jointDesiredOutputList = environment.getJointDesiredOutputList();
+      this.jointDesiredOutputList = new JointDesiredOutputList(environment.getFullRobotModel().getControllableOneDoFJoints());
       this.referenceFrames = new QuadrupedReferenceFrames(environment.getFullRobotModel(), physicalProperties);
       this.inverseKinematicsCalculators = new QuadrupedInverseKinematicsCalculators(modelFactory, jointDesiredOutputList, physicalProperties,
                                                                                     environment.getFullRobotModel(), referenceFrames, registry,
@@ -2223,5 +2211,11 @@ public class QuadrupedPositionBasedCrawlController implements QuadrupedControlle
    public void onExit()
    {
 
+   }
+
+   @Override
+   public JointDesiredOutputListReadOnly getJointDesiredOutputList()
+   {
+      return jointDesiredOutputList;
    }
 }

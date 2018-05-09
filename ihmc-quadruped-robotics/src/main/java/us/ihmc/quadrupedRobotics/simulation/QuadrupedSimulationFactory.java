@@ -25,6 +25,7 @@ import us.ihmc.quadrupedRobotics.estimator.sensorProcessing.simulatedSensors.SDF
 import us.ihmc.quadrupedRobotics.estimator.stateEstimator.QuadrupedSensorInformation;
 import us.ihmc.quadrupedRobotics.estimator.stateEstimator.QuadrupedStateEstimatorFactory;
 import us.ihmc.quadrupedRobotics.factories.QuadrupedRobotControllerFactory;
+
 import us.ihmc.quadrupedRobotics.mechanics.inverseKinematics.QuadrupedInverseKinematicsCalculators;
 import us.ihmc.quadrupedRobotics.mechanics.inverseKinematics.QuadrupedLegInverseKinematicsCalculator;
 import us.ihmc.quadrupedRobotics.model.*;

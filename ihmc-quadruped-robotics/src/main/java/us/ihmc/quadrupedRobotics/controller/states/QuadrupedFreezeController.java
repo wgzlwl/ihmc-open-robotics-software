@@ -13,6 +13,7 @@ import us.ihmc.robotics.screwTheory.OneDoFJoint;
 import us.ihmc.sensorProcessing.outputData.JointDesiredControlMode;
 import us.ihmc.sensorProcessing.outputData.JointDesiredOutput;
 import us.ihmc.sensorProcessing.outputData.JointDesiredOutputList;
+import us.ihmc.sensorProcessing.outputData.JointDesiredOutputListReadOnly;
 import us.ihmc.yoVariables.parameters.DoubleParameter;
 import us.ihmc.yoVariables.registry.YoVariableRegistry;
 import us.ihmc.yoVariables.variable.YoBoolean;
@@ -43,14 +44,14 @@ public class QuadrupedFreezeController implements QuadrupedController
                                     QuadrupedControlMode controlMode, YoVariableRegistry parentRegistry)
    {
       this.controllerToolbox = controllerToolbox;
-      this.jointDesiredOutputList = controllerToolbox.getRuntimeEnvironment().getJointDesiredOutputList();
+      fullRobotModel = controllerToolbox.getRuntimeEnvironment().getFullRobotModel();
+      this.jointDesiredOutputList = new JointDesiredOutputList(fullRobotModel.getControllableOneDoFJoints());
 
       // Yo variables
       yoUseForceFeedbackControl = new YoBoolean("useForceFeedbackControl", registry);
       yoUseForceFeedbackControl.set(controlMode == QuadrupedControlMode.FORCE);
 
       feetManager = controlManagerFactory.getOrCreateFeetManager();
-      fullRobotModel = controllerToolbox.getRuntimeEnvironment().getFullRobotModel();
 
       for (OneDoFJoint joint : fullRobotModel.getOneDoFJoints())
       {
@@ -126,5 +127,11 @@ public class QuadrupedFreezeController implements QuadrupedController
             jointDesiredOutputList.getJointDesiredOutput(oneDoFJoint).setControlMode(JointDesiredControlMode.EFFORT);
          }
       }
+   }
+
+   @Override
+   public JointDesiredOutputListReadOnly getJointDesiredOutputList()
+   {
+      return jointDesiredOutputList;
    }
 }

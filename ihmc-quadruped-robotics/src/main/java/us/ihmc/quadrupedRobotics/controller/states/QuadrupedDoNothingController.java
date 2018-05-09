@@ -13,6 +13,7 @@ import us.ihmc.robotics.screwTheory.OneDoFJoint;
 import us.ihmc.sensorProcessing.outputData.JointDesiredControlMode;
 import us.ihmc.sensorProcessing.outputData.JointDesiredOutput;
 import us.ihmc.sensorProcessing.outputData.JointDesiredOutputList;
+import us.ihmc.sensorProcessing.outputData.JointDesiredOutputListReadOnly;
 import us.ihmc.yoVariables.registry.YoVariableRegistry;
 import us.ihmc.yoVariables.variable.YoBoolean;
 import us.ihmc.yoVariables.variable.YoDouble;
@@ -27,15 +28,13 @@ public class QuadrupedDoNothingController implements QuadrupedController
    private final JointDesiredOutputList jointDesiredOutputList;
    private final ArrayList<YoDouble> desiredDoNothingTorques = new ArrayList<>();
    private final ArrayList<OneDoFJoint> legJoints = new ArrayList<>();
-   private final QuadrupedFeetManager feetManager;
 
    private final YoBoolean forceFeedbackControlEnabled;
 
-   public QuadrupedDoNothingController(QuadrupedFeetManager feetManager, QuadrupedRuntimeEnvironment environment, QuadrupedControlMode controlMode,
+   public QuadrupedDoNothingController(FullQuadrupedRobotModel fullRobotModel, QuadrupedControlMode controlMode,
                                        YoVariableRegistry parentRegistry)
    {
-      FullQuadrupedRobotModel fullRobotModel = environment.getFullRobotModel();
-      this.jointDesiredOutputList = environment.getJointDesiredOutputList();
+      this.jointDesiredOutputList = new JointDesiredOutputList(fullRobotModel.getControllableOneDoFJoints());
 
       for (OneDoFJoint joint : fullRobotModel.getOneDoFJoints())
       {
@@ -46,7 +45,6 @@ public class QuadrupedDoNothingController implements QuadrupedController
       forceFeedbackControlEnabled = new YoBoolean("forceFeedbackControlEnabled", registry);
       forceFeedbackControlEnabled.set(controlMode == QuadrupedControlMode.FORCE);
 
-      this.feetManager = feetManager;
       parentRegistry.addChild(registry);
    }
 
@@ -88,6 +86,12 @@ public class QuadrupedDoNothingController implements QuadrupedController
    @Override
    public void onExit()
    {
+   }
+
+   @Override
+   public JointDesiredOutputListReadOnly getJointDesiredOutputList()
+   {
+      return jointDesiredOutputList;
    }
 }
 

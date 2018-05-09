@@ -15,6 +15,7 @@ import us.ihmc.robotics.trajectories.MinimumJerkTrajectory;
 import us.ihmc.sensorProcessing.outputData.JointDesiredControlMode;
 import us.ihmc.sensorProcessing.outputData.JointDesiredOutput;
 import us.ihmc.sensorProcessing.outputData.JointDesiredOutputList;
+import us.ihmc.sensorProcessing.outputData.JointDesiredOutputListReadOnly;
 import us.ihmc.yoVariables.parameters.DoubleParameter;
 import us.ihmc.yoVariables.registry.YoVariableRegistry;
 import us.ihmc.yoVariables.variable.YoBoolean;
@@ -50,7 +51,7 @@ public class QuadrupedStandPrepController implements QuadrupedController
    {
       this.initialPositionParameters = initialPositionParameters;
       this.fullRobotModel = environment.getFullRobotModel();
-      this.jointDesiredOutputList = environment.getJointDesiredOutputList();
+      this.jointDesiredOutputList = new JointDesiredOutputList(fullRobotModel.getControllableOneDoFJoints());
       this.dt = environment.getControlDT();
 
       this.trajectories = new ArrayList<>(fullRobotModel.getOneDoFJoints().length);
@@ -133,6 +134,12 @@ public class QuadrupedStandPrepController implements QuadrupedController
    private boolean isMotionExpired()
    {
       return timeInTrajectory > trajectoryTimeParameter.getValue();
+   }
+
+   @Override
+   public JointDesiredOutputListReadOnly getJointDesiredOutputList()
+   {
+      return jointDesiredOutputList;
    }
 }
 

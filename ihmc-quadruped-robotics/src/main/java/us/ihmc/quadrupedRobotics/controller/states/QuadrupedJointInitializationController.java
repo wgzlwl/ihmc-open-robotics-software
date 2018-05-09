@@ -1,19 +1,19 @@
 package us.ihmc.quadrupedRobotics.controller.states;
 
-import java.util.BitSet;
-
+import us.ihmc.quadrupedRobotics.controller.ControllerEvent;
 import us.ihmc.quadrupedRobotics.controller.QuadrupedControlMode;
+import us.ihmc.quadrupedRobotics.controller.QuadrupedController;
 import us.ihmc.robotModels.FullQuadrupedRobotModel;
 import us.ihmc.robotModels.FullRobotModel;
 import us.ihmc.robotics.partNames.JointRole;
-import us.ihmc.quadrupedRobotics.controller.ControllerEvent;
-import us.ihmc.quadrupedRobotics.controller.QuadrupedController;
-import us.ihmc.quadrupedRobotics.model.QuadrupedRuntimeEnvironment;
 import us.ihmc.robotics.screwTheory.OneDoFJoint;
 import us.ihmc.sensorProcessing.outputData.JointDesiredControlMode;
 import us.ihmc.sensorProcessing.outputData.JointDesiredOutputList;
+import us.ihmc.sensorProcessing.outputData.JointDesiredOutputListReadOnly;
 import us.ihmc.yoVariables.registry.YoVariableRegistry;
 import us.ihmc.yoVariables.variable.YoBoolean;
+
+import java.util.BitSet;
 
 /**
  * This controller sets desired joint angles to their actual values when the joint comes online.
@@ -33,10 +33,10 @@ public class QuadrupedJointInitializationController implements QuadrupedControll
     */
    private final BitSet initialized;
 
-   public QuadrupedJointInitializationController(QuadrupedRuntimeEnvironment environment, QuadrupedControlMode controlMode, YoVariableRegistry parentRegistry)
+   public QuadrupedJointInitializationController(FullQuadrupedRobotModel fullRobotModel, QuadrupedControlMode controlMode, YoVariableRegistry parentRegistry)
    {
-      this.fullRobotModel = environment.getFullRobotModel();
-      this.jointDesiredOutputList = environment.getJointDesiredOutputList();
+      this.fullRobotModel = fullRobotModel;
+      this.jointDesiredOutputList = new JointDesiredOutputList(fullRobotModel.getControllableOneDoFJoints());
       this.initialized = new BitSet(fullRobotModel.getOneDoFJoints().length);
 
       forceFeedbackControlEnabled = new YoBoolean("useForceFeedbackControl", registry);
@@ -96,6 +96,12 @@ public class QuadrupedJointInitializationController implements QuadrupedControll
    private boolean allJointsInitialized()
    {
       return initialized.cardinality() == initialized.length();
+   }
+
+   @Override
+   public JointDesiredOutputListReadOnly getJointDesiredOutputList()
+   {
+      return jointDesiredOutputList;
    }
 }
 

@@ -7,6 +7,7 @@ public enum QuadrupedControllerEnum
    STAND_PREP,
    STAND_READY,
    FREEZE,
+   STAND_TRANSITION,
    STEPPING,
    FALL;
 

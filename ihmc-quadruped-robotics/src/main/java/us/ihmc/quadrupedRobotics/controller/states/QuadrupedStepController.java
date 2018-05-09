@@ -12,9 +12,10 @@ import us.ihmc.quadrupedRobotics.planning.ContactState;
 import us.ihmc.quadrupedRobotics.planning.QuadrupedStep;
 import us.ihmc.robotics.lists.RecyclingArrayList;
 import us.ihmc.robotics.robotSide.QuadrantDependentList;
+import us.ihmc.robotics.stateMachine.extra.EventState;
 import us.ihmc.yoVariables.registry.YoVariableRegistry;
 
-public class QuadrupedStepController implements QuadrupedController
+public class QuadrupedStepController implements EventState
 {
    private final YoVariableRegistry registry = new YoVariableRegistry(getClass().getSimpleName());
 
