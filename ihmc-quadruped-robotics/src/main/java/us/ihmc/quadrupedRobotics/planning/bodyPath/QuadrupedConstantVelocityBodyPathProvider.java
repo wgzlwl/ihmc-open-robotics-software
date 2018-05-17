@@ -186,8 +186,6 @@ public class QuadrupedConstantVelocityBodyPathProvider implements QuadrupedPlana
       tempVector.applyTransform(tempTransform);
       tempVector.add(latestMessageSoleDesiredPosition);
       startPoint.set(tempVector);
-
-      startPoint.add(achievedStepAdjustment.getX(), achievedStepAdjustment.getY());
    }
 
    private void computeStepAdjustmentFromFootstepStatus()

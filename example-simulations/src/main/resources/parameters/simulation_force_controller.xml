@@ -127,7 +127,6 @@
                         <parameter name="maximumFeedback_comPosition" type="DoubleParameter" min="0.0" max="1.0" value="Infinity"/>
                         <parameter name="maximumFeedbackRate_comPosition" type="DoubleParameter" min="0.0" max="1.0" value="Infinity"/>
                     </registry>
-                    <parameter name="dcmPositionStepAdjustmentGain" type="DoubleParameter" min="0.0" max="1.0" value="1.5"/>
                     <parameter name="minimumStepClearance" type="DoubleParameter" min="0.0" max="1.0" value="0.075"/>
                     <parameter name="maximumStepStride" type="DoubleParameter" min="0.0" max="1.0" value="1.0"/>
                 </registry>
