@@ -43,14 +43,14 @@ public abstract class QuadrupedXGaitFlatGroundPaceTest implements QuadrupedMulti
          throw new RuntimeException("Error loading simulation: " + e.getMessage());
       }
    }
-   
+
    @After
    public void tearDown()
    {
       conductor.concludeTesting(2);
       conductor = null;
       variables = null;
-      
+
       MemoryTools.printCurrentMemoryUsageAndReturnUsedMemoryInMB(getClass().getSimpleName() + " after test.");
    }
 
@@ -74,7 +74,7 @@ public abstract class QuadrupedXGaitFlatGroundPaceTest implements QuadrupedMulti
       variables.getYoPlanarVelocityInputX().set(directionX * 1.0);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
       conductor.addTimeLimit(variables.getYoTime(), 10.0);
-      if(directionX < 0)
+      if (directionX < 0)
       {
          conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyX(), directionX * 2.0));
       }
@@ -106,7 +106,7 @@ public abstract class QuadrupedXGaitFlatGroundPaceTest implements QuadrupedMulti
       variables.getYoPlanarVelocityInputX().set(directionX * 0.1);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
       conductor.addTimeLimit(variables.getYoTime(), 10.0);
-      if(directionX < 0)
+      if (directionX < 0)
       {
          conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyX(), directionX * 0.4));
       }
@@ -116,7 +116,7 @@ public abstract class QuadrupedXGaitFlatGroundPaceTest implements QuadrupedMulti
       }
       conductor.simulate();
    }
-   
+
    public void testPacingInAForwardLeftCircle()
    {
       paceInACircle(1.0, 1.0);
@@ -147,7 +147,7 @@ public abstract class QuadrupedXGaitFlatGroundPaceTest implements QuadrupedMulti
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
       conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getYoTime(), variables.getYoTime().getDoubleValue() + 1.0));
       conductor.simulate();
-      
+
       variables.getYoPlanarVelocityInputX().set(directionX * 0.6);
       variables.getYoPlanarVelocityInputZ().set(directionZ * 0.5);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));

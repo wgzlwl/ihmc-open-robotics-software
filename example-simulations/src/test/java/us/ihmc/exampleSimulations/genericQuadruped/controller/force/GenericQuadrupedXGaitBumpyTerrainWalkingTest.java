@@ -20,7 +20,7 @@ public class GenericQuadrupedXGaitBumpyTerrainWalkingTest extends QuadrupedXGait
    {
       return new GenericQuadrupedTestFactory();
    }
-   
+
    @Override
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 250000)
@@ -28,7 +28,7 @@ public class GenericQuadrupedXGaitBumpyTerrainWalkingTest extends QuadrupedXGait
    {
       super.testWalkingOverShallowBumpyTerrain();
    }
-   
+
    @Override
    @ContinuousIntegrationTest(estimatedDuration = 40.0)
    @Test(timeout = 250000)
@@ -36,7 +36,7 @@ public class GenericQuadrupedXGaitBumpyTerrainWalkingTest extends QuadrupedXGait
    {
       super.testWalkingOverMediumBumpyTerrain();
    }
-   
+
    @Override
    @ContinuousIntegrationTest(estimatedDuration = 50.0, categoriesOverride = IntegrationCategory.IN_DEVELOPMENT)
    @Test(timeout = 350000)

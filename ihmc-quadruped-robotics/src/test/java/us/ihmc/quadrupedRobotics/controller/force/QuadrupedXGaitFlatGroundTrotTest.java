@@ -40,22 +40,22 @@ public abstract class QuadrupedXGaitFlatGroundTrotTest implements QuadrupedMulti
          throw new RuntimeException("Error loading simulation: " + e.getMessage());
       }
    }
-   
+
    @After
    public void tearDown()
    {
       conductor.concludeTesting();
       conductor = null;
       variables = null;
-      
+
       MemoryTools.printCurrentMemoryUsageAndReturnUsedMemoryInMB(getClass().getSimpleName() + " after test.");
    }
-   
+
    public void testTrottingForwardFast()
    {
       trotFast(1.0);
    }
-   
+
    public void testTrottingBackwardsFast()
    {
       trotFast(-1.0);
@@ -71,7 +71,7 @@ public abstract class QuadrupedXGaitFlatGroundTrotTest implements QuadrupedMulti
       variables.getYoPlanarVelocityInputX().set(directionX * 0.6);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
       conductor.addTimeLimit(variables.getYoTime(), 5.0);
-      if(Math.signum(directionX) < 0)
+      if (Math.signum(directionX) < 0)
       {
          conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyX(), directionX * 2.0));
       }
@@ -81,7 +81,7 @@ public abstract class QuadrupedXGaitFlatGroundTrotTest implements QuadrupedMulti
       }
       conductor.simulate();
    }
-   
+
    public void testTrottingForwardSlow()
    {
       trotSlow(1.0);
@@ -91,21 +91,21 @@ public abstract class QuadrupedXGaitFlatGroundTrotTest implements QuadrupedMulti
    {
       trotSlow(-1.0);
    }
-   
+
    private void trotSlow(double directionX) throws AssertionFailedError
    {
       QuadrupedTestBehaviors.readyXGait(conductor, variables);
 
       variables.getXGaitEndPhaseShiftInput().set(180.0);
       QuadrupedTestBehaviors.enterXGait(conductor, variables);
-      
-//      variables.getXGaitEndDoubleSupportDurationInput().set(0.3);
-      
+
+      //      variables.getXGaitEndDoubleSupportDurationInput().set(0.3);
+
       variables.getYoPlanarVelocityInputX().set(directionX * 0.1);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
       conductor.addTimeLimit(variables.getYoTime(), 6.0);
-      
-      if(Math.signum(directionX) < 0)
+
+      if (Math.signum(directionX) < 0)
       {
          conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyX(), directionX * 0.3));
       }
@@ -113,25 +113,25 @@ public abstract class QuadrupedXGaitFlatGroundTrotTest implements QuadrupedMulti
       {
          conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyX(), directionX * 0.3));
       }
-      
+
       conductor.simulate();
    }
-   
+
    public void testTrottingInAForwardLeftCircle()
    {
       trotInACircle(1.0, 1.0);
    }
-   
+
    public void testTrottingInAForwardRightCircle()
    {
       trotInACircle(1.0, -1.0);
    }
-   
+
    public void testTrottingInABackwardLeftCircle()
    {
       trotInACircle(-1.0, 1.0);
    }
-   
+
    public void testTrottingInABackwardRightCircle()
    {
       trotInACircle(-1.0, -1.0);
@@ -147,12 +147,12 @@ public abstract class QuadrupedXGaitFlatGroundTrotTest implements QuadrupedMulti
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
       conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getYoTime(), variables.getYoTime().getDoubleValue() + 1.0));
       conductor.simulate();
-      
+
       variables.getYoPlanarVelocityInputX().set(directionX * 0.5);//reduced for real robot gains
       variables.getYoPlanarVelocityInputZ().set(directionZ * 0.25);//reduced for real robot gains
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
       conductor.addTimeLimit(variables.getYoTime(), 20.0);
-      if(Math.signum(directionX) > 0)
+      if (Math.signum(directionX) > 0)
       {
          conductor.addWaypointGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyX(), directionX * 0.25));
       }
@@ -160,7 +160,7 @@ public abstract class QuadrupedXGaitFlatGroundTrotTest implements QuadrupedMulti
       {
          conductor.addWaypointGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyX(), directionX * 0.25));
       }
-      
+
       conductor.addWaypointGoal(YoVariableTestGoal.doubleWithinEpsilon(variables.getRobotBodyYaw(), directionZ * Math.PI / 2, 0.1));
       conductor.addTerminalGoal(YoVariableTestGoal.doubleWithinEpsilon(variables.getRobotBodyYaw(), directionZ * Math.PI, 0.1));
       conductor.simulate();

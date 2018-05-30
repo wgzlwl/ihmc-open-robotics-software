@@ -99,6 +99,4 @@ public class GenericQuadrupedXGaitBumpyGroundTrackTest extends QuadrupedXGaitBum
       super.testBumpyGroundPacingBackwardOtherTrack();
    }
 
-
-
 }

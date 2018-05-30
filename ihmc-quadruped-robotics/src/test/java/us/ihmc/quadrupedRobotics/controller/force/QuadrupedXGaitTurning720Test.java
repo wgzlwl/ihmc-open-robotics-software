@@ -80,7 +80,7 @@ public abstract class QuadrupedXGaitTurning720Test implements QuadrupedMultiRobo
          conductor.simulate();
       }
    }
-   
+
    public void rotate720InPlaceLeft() throws SimulationExceededMaximumTimeException, ControllerFailureException, IOException
    {
       QuadrupedTestBehaviors.readyXGait(conductor, variables);

@@ -29,6 +29,7 @@ public abstract class QuadrupedXGaitChangeDirectionTest implements QuadrupedMult
 {
    private GoalOrientedTestConductor conductor;
    private QuadrupedForceTestYoVariables variables;
+   private double velocityScaleFactor;
 
    @Before
    public void setup()
@@ -43,12 +44,13 @@ public abstract class QuadrupedXGaitChangeDirectionTest implements QuadrupedMult
          quadrupedTestFactory.setUseStateEstimator(false);
          conductor = quadrupedTestFactory.createTestConductor();
          variables = new QuadrupedForceTestYoVariables(conductor.getScs());
+         velocityScaleFactor = 1;
       }
       catch (IOException e)
       {
          throw new RuntimeException("Error loading simulation: " + e.getMessage());
       }
-      
+
    }
 
    @After
@@ -61,7 +63,6 @@ public abstract class QuadrupedXGaitChangeDirectionTest implements QuadrupedMult
       MemoryTools.printCurrentMemoryUsageAndReturnUsedMemoryInMB(getClass().getSimpleName() + " after test.");
    }
 
-
    @Test
    public void testTrottingForwardThenChangeToLeft()
    {
@@ -70,7 +71,7 @@ public abstract class QuadrupedXGaitChangeDirectionTest implements QuadrupedMult
       Vector2D secondVelocity = new Vector2D(0.0, 0.4);
       velocities.add(firstVelocity);
       velocities.add(secondVelocity);
-      double[] segmentDurations = new double[]{2.0,2.0};
+      double[] segmentDurations = new double[] {2.0, 2.0};
       gaitThenChangeDirection(velocities, segmentDurations, 180.0);
    }
 
@@ -82,7 +83,7 @@ public abstract class QuadrupedXGaitChangeDirectionTest implements QuadrupedMult
       Vector2D secondVelocity = new Vector2D(0.0, 0.4);
       velocities.add(firstVelocity);
       velocities.add(secondVelocity);
-      double[] segmentDurations = new double[]{2.0,2.0};
+      double[] segmentDurations = new double[] {2.0, 2.0};
       gaitThenChangeDirection(velocities, segmentDurations, 180.0);
    }
 
@@ -94,7 +95,7 @@ public abstract class QuadrupedXGaitChangeDirectionTest implements QuadrupedMult
       Vector2D secondVelocity = new Vector2D(0.0, -0.4);
       velocities.add(firstVelocity);
       velocities.add(secondVelocity);
-      double[] segmentDurations = new double[]{2.0,2.0};
+      double[] segmentDurations = new double[] {2.0, 2.0};
       gaitThenChangeDirection(velocities, segmentDurations, 180.0);
    }
 
@@ -106,11 +107,9 @@ public abstract class QuadrupedXGaitChangeDirectionTest implements QuadrupedMult
       Vector2D secondVelocity = new Vector2D(0.0, -0.4);
       velocities.add(firstVelocity);
       velocities.add(secondVelocity);
-      double[] segmentDurations = new double[]{2.0,2.0};
+      double[] segmentDurations = new double[] {2.0, 2.0};
       gaitThenChangeDirection(velocities, segmentDurations, 180.0);
    }
-
-
 
    @Test
    public void testPacingForwardThenChangeToLeft()
@@ -120,7 +119,7 @@ public abstract class QuadrupedXGaitChangeDirectionTest implements QuadrupedMult
       Vector2D secondVelocity = new Vector2D(0.0, 0.4);
       velocities.add(firstVelocity);
       velocities.add(secondVelocity);
-      double[] segmentDurations = new double[]{2.0,2.0};
+      double[] segmentDurations = new double[] {2.0, 2.0};
       gaitThenChangeDirection(velocities, segmentDurations, 0.0);
    }
 
@@ -132,7 +131,7 @@ public abstract class QuadrupedXGaitChangeDirectionTest implements QuadrupedMult
       Vector2D secondVelocity = new Vector2D(0.0, 0.4);
       velocities.add(firstVelocity);
       velocities.add(secondVelocity);
-      double[] segmentDurations = new double[]{2.0,2.0};
+      double[] segmentDurations = new double[] {2.0, 2.0};
       gaitThenChangeDirection(velocities, segmentDurations, 0.0);
    }
 
@@ -144,7 +143,7 @@ public abstract class QuadrupedXGaitChangeDirectionTest implements QuadrupedMult
       Vector2D secondVelocity = new Vector2D(0.0, -0.4);
       velocities.add(firstVelocity);
       velocities.add(secondVelocity);
-      double[] segmentDurations = new double[]{2.0,2.0};
+      double[] segmentDurations = new double[] {2.0, 2.0};
       gaitThenChangeDirection(velocities, segmentDurations, 0.0);
    }
 
@@ -156,45 +155,42 @@ public abstract class QuadrupedXGaitChangeDirectionTest implements QuadrupedMult
       Vector2D secondVelocity = new Vector2D(0.0, -0.4);
       velocities.add(firstVelocity);
       velocities.add(secondVelocity);
-      double[] segmentDurations = new double[]{2.0,2.0};
+      double[] segmentDurations = new double[] {2.0, 2.0};
       gaitThenChangeDirection(velocities, segmentDurations, 0.0);
    }
 
-
-   private void gaitThenChangeDirection(List<Vector2D> velocities, double[] segmentDurations , double endPhaseShiftInput) throws  AssertionFailedError
+   private void gaitThenChangeDirection(List<Vector2D> velocities, double[] segmentDurations, double endPhaseShiftInput) throws AssertionFailedError
    {
       QuadrupedTestBehaviors.readyXGait(conductor, variables);
       variables.getXGaitEndPhaseShiftInput().set(endPhaseShiftInput);
       QuadrupedTestBehaviors.enterXGait(conductor, variables);
 
+      for (int i = 0; i < velocities.size(); i++)
+      {
+         velocities.get(i).scale(getVelocityScaleFactor());
+         segmentDurations[i] = segmentDurations[i] * getVelocityScaleFactor();
 
-      variables.setYoPlanarVelocityInput(velocities.get(0));
-      conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
-      conductor.addTimeLimit(variables.getYoTime(), 5.0);
+         variables.getYoPlanarVelocityInputX().set(0.0);
+         Point2D startPoint = new Point2D(variables.getRobotBodyX().getDoubleValue(), variables.getRobotBodyY().getDoubleValue());
+         variables.setYoPlanarVelocityInput(velocities.get(i));
+         conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
+         conductor.addTimeLimit(variables.getYoTime(), 5.0);
 
-      Point2D terminalGoal = new Point2D(velocities.get(0));
-      terminalGoal.scale(segmentDurations[0]);
-      RigidBodyTransformGenerator transformGenerator = new RigidBodyTransformGenerator();
-      transformGenerator.rotate(0.5*Math.PI, Axis.Z);
-      velocities.get(0).applyTransform(transformGenerator.getRigidBodyTransformCopy());
-      Line2D perpendicularLine = new Line2D(terminalGoal,velocities.get(0));
-      conductor.addTerminalGoal(YoVariableTestGoal.nearLine(variables.getRobotBodyX(),variables.getRobotBodyY(), perpendicularLine, 0.05));
-      conductor.simulate();
+         Point2D terminalGoal = new Point2D(velocities.get(i));
+         terminalGoal.scaleAdd(segmentDurations[i], startPoint);
+         RigidBodyTransformGenerator transformGenerator = new RigidBodyTransformGenerator();
+         transformGenerator.rotate(0.5 * Math.PI, Axis.Z);
+         velocities.get(i).applyTransform(transformGenerator.getRigidBodyTransformCopy());
+         Line2D perpendicularLine = new Line2D(terminalGoal, velocities.get(i));
+         conductor.addTerminalGoal(YoVariableTestGoal.nearLine(variables.getRobotBodyX(), variables.getRobotBodyY(), perpendicularLine, 0.05));
+         conductor.simulate();
+      }
 
-      variables.getYoPlanarVelocityInputX().set(0.0);
-      Point2D newStartPoint = new Point2D(variables.getRobotBodyX().getDoubleValue(), variables.getRobotBodyY().getDoubleValue());
-      variables.setYoPlanarVelocityInput(velocities.get(1));
-      conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
-      conductor.addTimeLimit(variables.getYoTime(), 5.0);
-
-
-      Point2D terminalGoal1 = new Point2D(velocities.get(1));
-      terminalGoal1.scaleAdd(segmentDurations[1], newStartPoint);
-      velocities.get(1).applyTransform(transformGenerator.getRigidBodyTransformCopy());
-      Line2D perpendicularLine1 = new Line2D(terminalGoal1, velocities.get(1));
-      conductor.addTerminalGoal(YoVariableTestGoal.nearLine(variables.getRobotBodyX(),variables.getRobotBodyY(), perpendicularLine1, 0.05));
-      conductor.simulate();
    }
 
+   private double getVelocityScaleFactor()
+   {
+      return velocityScaleFactor;
+   }
 
 }

@@ -17,37 +17,58 @@ public class GenericQuadrupedXGaitTurnTrotTest extends QuadrupedXGaitTurnTest
 
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
-   public void testTrottingForwardThenTurnLeft() { super.testTrottingForwardThenTurnLeft(); }
+   public void testTrottingForwardThenTurnLeft()
+   {
+      super.testTrottingForwardThenTurnLeft();
+   }
 
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
-   public void testTrottingBackwardThenTurnLeft() { super.testTrottingBackwardThenTurnLeft(); }
+   public void testTrottingBackwardThenTurnLeft()
+   {
+      super.testTrottingBackwardThenTurnLeft();
+   }
 
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
-   public void testTrottingForwardThenTurnRight() { super.testTrottingForwardThenTurnRight(); }
+   public void testTrottingForwardThenTurnRight()
+   {
+      super.testTrottingForwardThenTurnRight();
+   }
 
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
-   public void testTrottingBackwardThenTurnRight() { super.testTrottingBackwardThenTurnRight(); }
-
-
-
-   @ContinuousIntegrationTest(estimatedDuration = 30.0)
-   @Test(timeout = 200000)
-   public void testTrottingDiagonallyForwardLeft() { super.testTrottingDiagonallyForwardLeft(); }
+   public void testTrottingBackwardThenTurnRight()
+   {
+      super.testTrottingBackwardThenTurnRight();
+   }
 
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
-   public void testTrottingDiagonallyBackwardLeft() { super.testTrottingDiagonallyBackwardLeft(); }
+   public void testTrottingDiagonallyForwardLeft()
+   {
+      super.testTrottingDiagonallyForwardLeft();
+   }
 
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
-   public void testTrottingDiagonallyForwardRight() { super.testTrottingDiagonallyForwardRight(); }
+   public void testTrottingDiagonallyBackwardLeft()
+   {
+      super.testTrottingDiagonallyBackwardLeft();
+   }
 
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
-   public void testTrottingDiagonallyBackwardRight() { super.testTrottingDiagonallyBackwardRight(); }
+   public void testTrottingDiagonallyForwardRight()
+   {
+      super.testTrottingDiagonallyForwardRight();
+   }
 
+   @ContinuousIntegrationTest(estimatedDuration = 30.0)
+   @Test(timeout = 200000)
+   public void testTrottingDiagonallyBackwardRight()
+   {
+      super.testTrottingDiagonallyBackwardRight();
+   }
 
 }

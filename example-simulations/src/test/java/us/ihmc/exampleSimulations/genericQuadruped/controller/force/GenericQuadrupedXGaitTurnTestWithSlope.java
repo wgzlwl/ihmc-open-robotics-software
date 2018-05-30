@@ -17,7 +17,6 @@ public class GenericQuadrupedXGaitTurnTestWithSlope extends QuadrupedXGaitTurnTe
       return new GenericQuadrupedTestFactory();
    }
 
-
    @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
    public void testTrottingForwardThenTurnLeftWithSlope()
@@ -45,8 +44,6 @@ public class GenericQuadrupedXGaitTurnTestWithSlope extends QuadrupedXGaitTurnTe
    {
       super.testTrottingBackwardThenTurnRightWithSlope();
    }
-
-
 
    @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)

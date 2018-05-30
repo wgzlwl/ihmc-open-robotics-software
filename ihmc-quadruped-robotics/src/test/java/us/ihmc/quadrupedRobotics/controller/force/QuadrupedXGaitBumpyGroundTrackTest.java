@@ -53,7 +53,6 @@ public abstract class QuadrupedXGaitBumpyGroundTrackTest implements QuadrupedMul
       MemoryTools.printCurrentMemoryUsageAndReturnUsedMemoryInMB(getClass().getSimpleName() + " after test.");
    }
 
-
    @Test
    public void testBumpyGroundTrottingForwardTrack()
    {
@@ -126,25 +125,23 @@ public abstract class QuadrupedXGaitBumpyGroundTrackTest implements QuadrupedMul
       gaitBumpyGroundTrack(-1, -1, 0.0);
    }
 
-
-   private void gaitBumpyGroundTrack(double directionX, double directionY, double endPhaseShiftInput) throws  AssertionFailedError
+   private void gaitBumpyGroundTrack(double directionX, double directionY, double endPhaseShiftInput) throws AssertionFailedError
    {
       QuadrupedTestBehaviors.readyXGait(conductor, variables);
       variables.getXGaitEndPhaseShiftInput().set(endPhaseShiftInput);
       QuadrupedTestBehaviors.enterXGait(conductor, variables);
 
-
       variables.getYoPlanarVelocityInputX().set(directionX * 1.0);
-      variables.getYoPlanarVelocityInputZ().set(directionX*directionY*0.15);
+      variables.getYoPlanarVelocityInputZ().set(directionX * directionY * 0.15);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
       conductor.addTimeLimit(variables.getYoTime(), 8.0);
-      if(directionX *directionY< 0)
+      if (directionX * directionY < 0)
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyYaw(), directionX*directionY *0.25* Math.PI));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyYaw(), directionX * directionY * 0.25 * Math.PI));
       }
       else
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyYaw(), directionX*directionY*0.25* Math.PI));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyYaw(), directionX * directionY * 0.25 * Math.PI));
       }
       conductor.simulate();
 
@@ -152,16 +149,16 @@ public abstract class QuadrupedXGaitBumpyGroundTrackTest implements QuadrupedMul
       variables.getYoPlanarVelocityInputZ().set(0.0);
       variables.getXGaitEndPhaseShiftInput().set(endPhaseShiftInput);
 
-      variables.getYoPlanarVelocityInputY().set(directionY*0.3);
+      variables.getYoPlanarVelocityInputY().set(directionY * 0.2);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
       conductor.addTimeLimit(variables.getYoTime(), 8.0);
-      if(directionY< 0)
+      if (directionY < 0)
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyY(), directionY*3));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyY(), directionY * 3));
       }
       else
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyY(), directionY*3));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyY(), directionY * 3));
       }
       conductor.simulate();
 
@@ -169,28 +166,28 @@ public abstract class QuadrupedXGaitBumpyGroundTrackTest implements QuadrupedMul
       variables.getYoPlanarVelocityInputX().set(directionX * -1.0);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
       conductor.addTimeLimit(variables.getYoTime(), 8.0);
-      if(directionX < 0)
+      if (directionX < 0)
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyY(), directionY*2));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyY(), directionY * 2));
       }
       else
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyY(), directionY*2));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyY(), directionY * 2));
       }
       conductor.simulate();
 
       variables.getYoPlanarVelocityInputX().set(0.0);
-      variables.getYoPlanarVelocityInputZ().set(directionX*directionY*0.3);
+      variables.getYoPlanarVelocityInputZ().set(directionX * directionY * 0.2);
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
       conductor.addTimeLimit(variables.getYoTime(), 8.0);
 
-      if(directionX *directionY< 0)
+      if (directionX * directionY < 0)
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyYaw(), directionX*directionY *0.5* Math.PI));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyYaw(), directionX * directionY * 0.5 * Math.PI));
       }
       else
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyYaw(), directionX*directionY*0.5* Math.PI));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyYaw(), directionX * directionY * 0.5 * Math.PI));
       }
       conductor.simulate();
 
@@ -199,24 +196,22 @@ public abstract class QuadrupedXGaitBumpyGroundTrackTest implements QuadrupedMul
       conductor.addSustainGoal(QuadrupedTestGoals.notFallen(variables));
       conductor.addTimeLimit(variables.getYoTime(), 8.0);
 
-      if(directionX < 0)
+      if (directionX < 0)
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyY(), directionY*4));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleLessThan(variables.getRobotBodyY(), directionY * 4));
       }
       else
       {
-         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyY(), directionY*4 ));
+         conductor.addTerminalGoal(YoVariableTestGoal.doubleGreaterThan(variables.getRobotBodyY(), directionY * 4));
       }
       conductor.simulate();
-
-
 
    }
 
    private static BumpyGroundProfile createBumpyGroundProfile()
    {
-      double xAmp1 = 0.05, xFreq1 = 0.2, xAmp2 = 0.01, xFreq2 = 0.2;
-      double yAmp1 = 0.01, yFreq1 = 0.07, yAmp2 = 0.05, yFreq2 = 0.17;
+      double xAmp1 = 0.03, xFreq1 = 0.2, xAmp2 = 0.01, xFreq2 = 0.2;
+      double yAmp1 = 0.01, yFreq1 = 0.07, yAmp2 = 0.03, yFreq2 = 0.17;
       BumpyGroundProfile groundProfile = new BumpyGroundProfile(xAmp1, xFreq1, xAmp2, xFreq2, yAmp1, yFreq1, yAmp2, yFreq2);
       return groundProfile;
    }

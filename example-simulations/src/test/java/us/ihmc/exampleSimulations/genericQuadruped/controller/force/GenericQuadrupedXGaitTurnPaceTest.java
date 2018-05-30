@@ -17,37 +17,58 @@ public class GenericQuadrupedXGaitTurnPaceTest extends QuadrupedXGaitTurnTest
 
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
-   public void testPacingForwardThenTurnLeft() { super.testPacingForwardThenTurnLeft(); }
+   public void testPacingForwardThenTurnLeft()
+   {
+      super.testPacingForwardThenTurnLeft();
+   }
 
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
-   public void testPacingBackwardThenTurnLeft() { super.testPacingBackwardThenTurnLeft(); }
+   public void testPacingBackwardThenTurnLeft()
+   {
+      super.testPacingBackwardThenTurnLeft();
+   }
 
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
-   public void testPacingForwardThenTurnRight() { super.testPacingForwardThenTurnRight(); }
+   public void testPacingForwardThenTurnRight()
+   {
+      super.testPacingForwardThenTurnRight();
+   }
 
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
-   public void testPacingBackwardThenTurnRight() { super.testPacingBackwardThenTurnRight(); }
-
-
-
-   @ContinuousIntegrationTest(estimatedDuration = 30.0)
-   @Test(timeout = 200000)
-   public void testPacingDiagonallyForwardLeft() { super.testPacingDiagonallyForwardLeft(); }
+   public void testPacingBackwardThenTurnRight()
+   {
+      super.testPacingBackwardThenTurnRight();
+   }
 
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
-   public void testPacingDiagonallyBackwardLeft() { super.testPacingDiagonallyBackwardLeft(); }
+   public void testPacingDiagonallyForwardLeft()
+   {
+      super.testPacingDiagonallyForwardLeft();
+   }
 
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
-   public void testPacingDiagonallyForwardRight() { super.testPacingDiagonallyForwardRight(); }
+   public void testPacingDiagonallyBackwardLeft()
+   {
+      super.testPacingDiagonallyBackwardLeft();
+   }
 
    @ContinuousIntegrationTest(estimatedDuration = 30.0)
    @Test(timeout = 200000)
-   public void testPacingDiagonallyBackwardRight() { super.testPacingDiagonallyBackwardRight(); }
+   public void testPacingDiagonallyForwardRight()
+   {
+      super.testPacingDiagonallyForwardRight();
+   }
 
+   @ContinuousIntegrationTest(estimatedDuration = 30.0)
+   @Test(timeout = 200000)
+   public void testPacingDiagonallyBackwardRight()
+   {
+      super.testPacingDiagonallyBackwardRight();
+   }
 
 }
