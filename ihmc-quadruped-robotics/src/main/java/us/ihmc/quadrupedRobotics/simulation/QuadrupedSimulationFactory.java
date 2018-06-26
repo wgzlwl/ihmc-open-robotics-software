@@ -110,8 +110,6 @@ public class QuadrupedSimulationFactory
    private final RequiredFactoryField<QuadrupedSensorInformation> sensorInformation = new RequiredFactoryField<>("sensorInformation");
    private final RequiredFactoryField<StateEstimatorParameters> stateEstimatorParameters = new RequiredFactoryField<>("stateEstimatorParameters");
    private final RequiredFactoryField<QuadrupedReferenceFrames> referenceFrames = new RequiredFactoryField<>("referenceFrames");
-   private final RequiredFactoryField<QuadrupedPositionBasedCrawlControllerParameters> positionBasedCrawlControllerParameters = new RequiredFactoryField<>(
-         "positionBasedCrawlControllerParameters");
    private final RequiredFactoryField<JointDesiredOutputList> jointDesiredOutputList = new RequiredFactoryField<>("jointDesiredOutputList");
 
    private final OptionalFactoryField<SimulatedElasticityParameters> simulatedElasticityParameters = new OptionalFactoryField<>(
@@ -333,16 +331,6 @@ public class QuadrupedSimulationFactory
       }
    }
 
-   private void createInverseKinematicsCalculator()
-   {
-      if (controlMode.get() == QuadrupedControlMode.POSITION)
-      {
-         legInverseKinematicsCalculator = new QuadrupedInverseKinematicsCalculators(modelFactory.get(), jointDesiredOutputList.get(), physicalProperties.get(),
-                                                                                    fullRobotModel.get(), referenceFrames.get(),
-                                                                                    sdfRobot.get().getRobotsYoVariableRegistry(), yoGraphicsListRegistry);
-      }
-   }
-
    public void createControllerManager() throws IOException
    {
 
@@ -354,30 +342,12 @@ public class QuadrupedSimulationFactory
                                                                                        contactableFeet, contactablePlaneBodies, centerOfMassDataHolder,
                                                                                        footSwitches, gravity.get(), isPositionControlOnStartUp);
 
-      // FIXME resolve all these
-      switch (controlMode.get())
-      {
-      case FORCE:
-         if (initialForceControlState.hasValue())
-            controllerManager = new QuadrupedControllerManager(runtimeEnvironment, physicalProperties.get(), initialPositionParameters.get(),
-                                                               initialForceControlState.get());
-         else
-            controllerManager = new QuadrupedControllerManager(runtimeEnvironment, physicalProperties.get(), initialPositionParameters.get());
-         break;
-      case POSITION:
-         if (initialForceControlState.hasValue())
-            controllerManager = new QuadrupedControllerManager(runtimeEnvironment, modelFactory.get(), physicalProperties.get(),
-                                                               positionBasedCrawlControllerParameters.get(), initialPositionParameters.get(),
-                                                               controlMode.get());
-         else
-            controllerManager = new QuadrupedControllerManager(runtimeEnvironment, modelFactory.get(), physicalProperties.get(),
-                                                               positionBasedCrawlControllerParameters.get(), initialPositionParameters.get(),
-                                                               initialForceControlState.get(), controlMode.get());
-         break;
-      default:
-         controllerManager = null;
-         break;
-      }
+      if (initialForceControlState.hasValue())
+         controllerManager = new QuadrupedControllerManager(runtimeEnvironment, physicalProperties.get(), initialPositionParameters.get(),
+                                                            initialForceControlState.get());
+      else
+         controllerManager = new QuadrupedControllerManager(runtimeEnvironment, physicalProperties.get(), initialPositionParameters.get());
+
    }
 
    private void createPoseCommunicator()
@@ -554,7 +524,6 @@ public class QuadrupedSimulationFactory
       createRealtimeRos2Node();
       createGlobalDataProducer();
       createHeadController();
-      createInverseKinematicsCalculator();
       createControllerManager();
       createControllerNetworkSubscriber();
       createPoseCommunicator();
@@ -778,10 +747,6 @@ public class QuadrupedSimulationFactory
       this.referenceFrames.set(referenceFrames);
    }
 
-   public void setPositionBasedCrawlControllerParameters(QuadrupedPositionBasedCrawlControllerParameters positionBasedCrawlControllerParameters)
-   {
-      this.positionBasedCrawlControllerParameters.set(positionBasedCrawlControllerParameters);
-   }
 
    public void setGroundProfile3D(GroundProfile3D groundProfile3D)
    {
