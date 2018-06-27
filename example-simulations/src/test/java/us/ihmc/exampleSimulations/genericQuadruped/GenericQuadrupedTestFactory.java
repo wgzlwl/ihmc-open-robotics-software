@@ -1,5 +1,6 @@
 package us.ihmc.exampleSimulations.genericQuadruped;
 
+import us.ihmc.commonWalkingControlModules.controllerCore.WholeBodyControllerCoreMode;
 import us.ihmc.commonWalkingControlModules.momentumBasedController.optimization.ControllerCoreOptimizationSettings;
 import us.ihmc.communication.ROS2Tools;
 import us.ihmc.communication.net.NetClassList;
@@ -16,7 +17,6 @@ import us.ihmc.quadrupedRobotics.QuadrupedTestFactory;
 import us.ihmc.quadrupedRobotics.communication.QuadrupedNetClassList;
 import us.ihmc.quadrupedRobotics.controller.QuadrupedControlMode;
 import us.ihmc.quadrupedRobotics.controller.QuadrupedControllerEnum;
-import us.ihmc.quadrupedRobotics.controller.states.QuadrupedPositionBasedCrawlControllerParameters;
 import us.ihmc.quadrupedRobotics.estimator.referenceFrames.QuadrupedReferenceFrames;
 import us.ihmc.quadrupedRobotics.estimator.stateEstimator.QuadrupedSensorInformation;
 import us.ihmc.quadrupedRobotics.input.QuadrupedTestTeleopScript;
@@ -62,7 +62,7 @@ public class GenericQuadrupedTestFactory implements QuadrupedTestFactory
    private static final boolean USE_TRACK_AND_DOLLY = false;
    private static final int TEST_INPUT_UPDATE_FREQUENCY = (int) (0.05 / SIMULATION_DT);
 
-   private final RequiredFactoryField<QuadrupedControlMode> controlMode = new RequiredFactoryField<>("controlMode");
+   private final RequiredFactoryField<WholeBodyControllerCoreMode> controlMode = new RequiredFactoryField<>("controlMode");
 
    private final OptionalFactoryField<Boolean> useStateEstimator = new OptionalFactoryField<>("useStateEstimator");
    private final OptionalFactoryField<QuadrupedGroundContactModelType> groundContactModelType = new OptionalFactoryField<>("groundContactModelType");
@@ -200,7 +200,7 @@ public class GenericQuadrupedTestFactory implements QuadrupedTestFactory
    }
 
    @Override
-   public void setControlMode(QuadrupedControlMode controlMode)
+   public void setControlMode(WholeBodyControllerCoreMode controlMode)
    {
       this.controlMode.set(controlMode);
    }

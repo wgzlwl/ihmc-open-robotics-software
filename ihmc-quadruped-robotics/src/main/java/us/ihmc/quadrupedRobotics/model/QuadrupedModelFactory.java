@@ -2,6 +2,8 @@ package us.ihmc.quadrupedRobotics.model;
 
 import java.util.Collection;
 
+import us.ihmc.commonWalkingControlModules.controllerCore.WholeBodyControllerCore;
+import us.ihmc.commonWalkingControlModules.controllerCore.WholeBodyControllerCoreMode;
 import us.ihmc.quadrupedRobotics.controller.QuadrupedControlMode;
 import us.ihmc.robotModels.FullQuadrupedRobotModel;
 import us.ihmc.robotModels.FullQuadrupedRobotModelFactory;
@@ -19,5 +21,5 @@ public abstract class QuadrupedModelFactory implements FullQuadrupedRobotModelFa
 
    public abstract String getSDFNameForJointName(QuadrupedJointName quadrupedJointName);
 
-   public abstract String getParameterResourceName(QuadrupedControlMode controlMode);
+   public abstract String getParameterResourceName(WholeBodyControllerCoreMode controlMode);
 }

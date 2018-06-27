@@ -1,6 +1,7 @@
 package us.ihmc.quadrupedRobotics.controller;
 
 import us.ihmc.commonWalkingControlModules.bipedSupportPolygons.YoPlaneContactState;
+import us.ihmc.commonWalkingControlModules.controllerCore.WholeBodyControllerCoreMode;
 import us.ihmc.euclid.referenceFrame.FramePoint3D;
 import us.ihmc.euclid.referenceFrame.FrameVector3D;
 import us.ihmc.euclid.referenceFrame.ReferenceFrame;
@@ -8,12 +9,13 @@ import us.ihmc.euclid.referenceFrame.interfaces.FrameVector3DReadOnly;
 import us.ihmc.graphicsDescription.yoGraphics.YoGraphicsListRegistry;
 import us.ihmc.graphicsDescription.yoGraphics.plotting.YoArtifactPolygon;
 import us.ihmc.humanoidRobotics.bipedSupportPolygons.ContactablePlaneBody;
-import us.ihmc.quadrupedRobotics.controlModules.foot.QuadrupedFootControlModuleParameters;
+import us.ihmc.quadrupedRobotics.parameters.QuadrupedFootControlModuleParameters;
 import us.ihmc.quadrupedRobotics.controller.toolbox.*;
 import us.ihmc.quadrupedRobotics.estimator.GroundPlaneEstimator;
 import us.ihmc.quadrupedRobotics.estimator.referenceFrames.QuadrupedReferenceFrames;
 import us.ihmc.quadrupedRobotics.model.QuadrupedPhysicalProperties;
 import us.ihmc.quadrupedRobotics.model.QuadrupedRuntimeEnvironment;
+import us.ihmc.quadrupedRobotics.parameters.QuadrupedJointControlParameters;
 import us.ihmc.quadrupedRobotics.planning.ContactState;
 import us.ihmc.robotModels.FullQuadrupedRobotModel;
 import us.ihmc.robotics.robotSide.QuadrantDependentList;
@@ -24,6 +26,7 @@ import us.ihmc.robotics.sensors.CenterOfMassDataHolder;
 import us.ihmc.robotics.sensors.CenterOfMassDataHolderReadOnly;
 import us.ihmc.yoVariables.registry.YoVariableRegistry;
 import us.ihmc.yoVariables.variable.YoBoolean;
+import us.ihmc.yoVariables.variable.YoEnum;
 import us.ihmc.yoVariables.variable.YoFrameConvexPolygon2D;
 import us.ihmc.yoVariables.variable.YoFrameVector3D;
 
@@ -58,7 +61,9 @@ public class QuadrupedControllerToolbox
 
    private final YoFrameVector3D yoCoMVelocityEstimate;
    private final CenterOfMassDataHolderReadOnly centerOfMassDataHolder;
-   private final YoBoolean isPositionControlled;
+   private final YoEnum<WholeBodyControllerCoreMode> controllerCoreMode;
+
+   private final QuadrupedJointControlParameters jointControlParameters;
 
    public QuadrupedControllerToolbox(QuadrupedRuntimeEnvironment runtimeEnvironment, QuadrupedPhysicalProperties physicalProperties,
                                      YoVariableRegistry registry, YoGraphicsListRegistry yoGraphicsListRegistry)
@@ -69,11 +74,13 @@ public class QuadrupedControllerToolbox
       yoCoMVelocityEstimate = new YoFrameVector3D("yoCoMVelocityEstimate", ReferenceFrame.getWorldFrame(), registry);
 
       this.runtimeEnvironment = runtimeEnvironment;
-      isPositionControlled = new YoBoolean("isPositionControlled", registry);
-      isPositionControlled.set(runtimeEnvironment.isPositionControlledOnStartup());
+      controllerCoreMode = new YoEnum<>("controllerCoreEnum", registry, WholeBodyControllerCoreMode.class);
+      controllerCoreMode.set(runtimeEnvironment.getControllerCoreMode());
+
+      jointControlParameters = new QuadrupedJointControlParameters(controllerCoreMode, registry);
 
       fullRobotModel = runtimeEnvironment.getFullRobotModel();
-      footControlModuleParameters = new QuadrupedFootControlModuleParameters(isPositionControlled);
+      footControlModuleParameters = new QuadrupedFootControlModuleParameters(controllerCoreMode);
       registry.addChild(footControlModuleParameters.getYoVariableRegistry());
 
       supportPolygon = new YoFrameConvexPolygon2D("supportPolygon", ReferenceFrame.getWorldFrame(), 4, registry);
@@ -230,8 +237,13 @@ public class QuadrupedControllerToolbox
       return soleForceEstimator.getSoleContactForce(robotQuadrant);
    }
 
-   public boolean isPositionControlled()
+   public WholeBodyControllerCoreMode getControllerCoreMode()
    {
-      return isPositionControlled.getBooleanValue();
+      return controllerCoreMode.getValue();
+   }
+
+   public QuadrupedJointControlParameters getJointControlParameters()
+   {
+      return jointControlParameters;
    }
 }

@@ -2,6 +2,7 @@ package us.ihmc.quadrupedRobotics.controller.force;
 
 import org.junit.After;
 import org.junit.Before;
+import us.ihmc.commonWalkingControlModules.controllerCore.WholeBodyControllerCoreMode;
 import us.ihmc.commonWalkingControlModules.pushRecovery.PushRobotTestConductor;
 import us.ihmc.commons.PrintTools;
 import us.ihmc.euclid.tuple3D.Vector3D;
@@ -52,7 +53,7 @@ public abstract class Quadruped2018PIDemoTest implements QuadrupedMultiRobotTest
       try
       {
          quadrupedTestFactory = createQuadrupedTestFactory();
-         quadrupedTestFactory.setControlMode(QuadrupedControlMode.FORCE);
+         quadrupedTestFactory.setControlMode(WholeBodyControllerCoreMode.VIRTUAL_MODEL);
          quadrupedTestFactory.setGroundContactModelType(QuadrupedGroundContactModelType.FLAT);
          quadrupedTestFactory.setUseNetworking(true);
          quadrupedTestFactory.setUsePushRobotController(true);
@@ -312,7 +313,7 @@ public abstract class Quadruped2018PIDemoTest implements QuadrupedMultiRobotTest
 
       quadrupedTestFactory.setScsParameters(simulationConstructionSetParameters);
       quadrupedTestFactory.setTerrainObject3D(staircaseEnvironment.getTerrainObject3D());
-      quadrupedTestFactory.setControlMode(QuadrupedControlMode.FORCE);
+      quadrupedTestFactory.setControlMode(WholeBodyControllerCoreMode.VIRTUAL_MODEL);
       quadrupedTestFactory.setUseNetworking(true);
 
       conductor = quadrupedTestFactory.createTestConductor();
@@ -373,7 +374,7 @@ public abstract class Quadruped2018PIDemoTest implements QuadrupedMultiRobotTest
       quadrupedTestFactory.setInitialOffset(initialOffsetAndYaw);
       quadrupedTestFactory.setScsParameters(simulationConstructionSetParameters);
       quadrupedTestFactory.setTerrainObject3D(staircaseEnvironment.getTerrainObject3D());
-      quadrupedTestFactory.setControlMode(QuadrupedControlMode.FORCE);
+      quadrupedTestFactory.setControlMode(WholeBodyControllerCoreMode.VIRTUAL_MODEL);
       quadrupedTestFactory.setUseNetworking(true);
 
       conductor = quadrupedTestFactory.createTestConductor();
@@ -424,7 +425,7 @@ public abstract class Quadruped2018PIDemoTest implements QuadrupedMultiRobotTest
 
       quadrupedTestFactory.setScsParameters(simulationConstructionSetParameters);
       quadrupedTestFactory.setTerrainObject3D(environment.getTerrainObject3D());
-      quadrupedTestFactory.setControlMode(QuadrupedControlMode.FORCE);
+      quadrupedTestFactory.setControlMode(WholeBodyControllerCoreMode.VIRTUAL_MODEL);
       quadrupedTestFactory.setUseNetworking(true);
 
       conductor = quadrupedTestFactory.createTestConductor();
@@ -460,7 +461,7 @@ public abstract class Quadruped2018PIDemoTest implements QuadrupedMultiRobotTest
       BumpyGroundProfile groundProfile = new BumpyGroundProfile(xAmp1, xFreq1, xAmp2, xFreq2, yAmp1, yFreq1, yAmp2, yFreq2, 1.2);
 
       QuadrupedTestFactory quadrupedTestFactory = createQuadrupedTestFactory();
-      quadrupedTestFactory.setControlMode(QuadrupedControlMode.FORCE);
+      quadrupedTestFactory.setControlMode(WholeBodyControllerCoreMode.VIRTUAL_MODEL);
       quadrupedTestFactory.setGroundProfile3D(groundProfile);
       quadrupedTestFactory.setUseNetworking(true);
       conductor = quadrupedTestFactory.createTestConductor();
