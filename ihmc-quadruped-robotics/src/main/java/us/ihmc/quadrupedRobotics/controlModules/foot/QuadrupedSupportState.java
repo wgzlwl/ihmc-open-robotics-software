@@ -3,11 +3,14 @@ package us.ihmc.quadrupedRobotics.controlModules.foot;
 import us.ihmc.commonWalkingControlModules.bipedSupportPolygons.YoPlaneContactState;
 import us.ihmc.commonWalkingControlModules.controllerCore.command.feedbackController.FeedbackControlCommand;
 import us.ihmc.commonWalkingControlModules.controllerCore.command.feedbackController.SpatialFeedbackControlCommand;
+import us.ihmc.commonWalkingControlModules.controllerCore.command.inverseKinematics.InverseKinematicsCommand;
+import us.ihmc.commonWalkingControlModules.controllerCore.command.inverseKinematics.SpatialVelocityCommand;
 import us.ihmc.commonWalkingControlModules.controllerCore.command.virtualModelControl.VirtualModelControlCommand;
 import us.ihmc.euclid.referenceFrame.FramePoint2D;
 import us.ihmc.euclid.referenceFrame.FramePoint3D;
 import us.ihmc.euclid.referenceFrame.FrameVector3D;
 import us.ihmc.euclid.referenceFrame.ReferenceFrame;
+import us.ihmc.quadrupedRobotics.controller.QuadrupedControllerToolbox;
 import us.ihmc.quadrupedRobotics.planning.YoQuadrupedTimedStep;
 import us.ihmc.robotics.robotSide.RobotQuadrant;
 import us.ihmc.yoVariables.variable.YoBoolean;
@@ -20,13 +23,21 @@ public class QuadrupedSupportState extends QuadrupedFootState
    private final RobotQuadrant robotQuadrant;
    private final YoPlaneContactState contactState;
 
-
+   private final SpatialVelocityCommand spatialVelocityCommand = new SpatialVelocityCommand();
    private final FrameVector3D footNormalContactVector = new FrameVector3D(worldFrame, 0.0, 0.0, 1.0);
 
-   public QuadrupedSupportState(RobotQuadrant robotQuadrant, YoPlaneContactState contactState)
+   private final ReferenceFrame soleFrame;
+
+   public QuadrupedSupportState(RobotQuadrant robotQuadrant, QuadrupedControllerToolbox controllerToolbox)
    {
       this.robotQuadrant = robotQuadrant;
-      this.contactState = contactState;
+      this.contactState = controllerToolbox.getFootContactState(robotQuadrant);
+
+      soleFrame = controllerToolbox.getSoleReferenceFrame(robotQuadrant);
+
+      spatialVelocityCommand.set(controllerToolbox.getFullRobotModel().getElevator(), controllerToolbox.getFullRobotModel().getFoot(robotQuadrant));
+      spatialVelocityCommand.setSelectionMatrixForLinearControl();
+      spatialVelocityCommand.setWeight(10.0);
    }
 
    @Override
@@ -42,7 +53,7 @@ public class QuadrupedSupportState extends QuadrupedFootState
    @Override
    public void doAction(double timeInState)
    {
-
+      spatialVelocityCommand.setSpatialVelocityToZero(soleFrame);
    }
 
    @Override
@@ -67,6 +78,14 @@ public class QuadrupedSupportState extends QuadrupedFootState
    {
       return null;
    }
+
+   @Override
+   public InverseKinematicsCommand<?> getInverseKinematicsCommand()
+   {
+      return null;
+//      return spatialVelocityCommand;
+   }
+
 
    @Override
    public FeedbackControlCommand<?> createFeedbackControlTemplate()

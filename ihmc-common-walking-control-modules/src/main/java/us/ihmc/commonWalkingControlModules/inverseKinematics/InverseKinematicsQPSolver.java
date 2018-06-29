@@ -89,6 +89,7 @@ public class InverseKinematicsQPSolver
          addJointAccelerationRegularization();
    }
 
+
    private void addJointAccelerationRegularization()
    {
       for (int i = 0; i < numberOfDoFs; i++)

@@ -6,6 +6,7 @@ import java.util.Map;
 import org.ejml.data.DenseMatrix64F;
 
 import us.ihmc.commonWalkingControlModules.controllerCore.WholeBodyControlCoreToolbox;
+import us.ihmc.commonWalkingControlModules.controllerCore.command.inverseDynamics.PlaneContactStateCommand;
 import us.ihmc.commonWalkingControlModules.controllerCore.command.inverseKinematics.*;
 import us.ihmc.commonWalkingControlModules.momentumBasedController.optimization.ControllerCoreOptimizationSettings;
 import us.ihmc.commonWalkingControlModules.momentumBasedController.WholeBodyControllerBoundCalculator;
@@ -42,11 +43,15 @@ public class InverseKinematicsOptimizationControlModule
    private final YoBoolean hasNotConvergedInPast = new YoBoolean("hasNotConvergedInPast", registry);
    private final YoInteger hasNotConvergedCounts = new YoInteger("hasNotConvergedCounts", registry);
 
+   private final ContactMatrixCalculator contactMatrixCalculator;
+
    public InverseKinematicsOptimizationControlModule(WholeBodyControlCoreToolbox toolbox, YoVariableRegistry parentRegistry)
    {
       jointIndexHandler = toolbox.getJointIndexHandler();
       jointsToOptimizeFor = jointIndexHandler.getIndexedJoints();
       oneDoFJoints = jointIndexHandler.getIndexedOneDoFJoints();
+
+      contactMatrixCalculator = new ContactMatrixCalculator(toolbox);
 
       numberOfDoFs = ScrewTools.computeDegreesOfFreedom(jointsToOptimizeFor);
       motionQPInput = new MotionQPInput(numberOfDoFs);
@@ -151,6 +156,13 @@ public class InverseKinematicsOptimizationControlModule
    public void submitSpatialVelocityCommand(SpatialVelocityCommand command)
    {
       boolean success = motionQPInputCalculator.convertSpatialVelocityCommand(command, motionQPInput);
+      if (success)
+         qpSolver.addMotionInput(motionQPInput);
+   }
+
+   public void submitPlaneContactStateCommand(PlaneContactStateCommand command)
+   {
+      boolean success = contactMatrixCalculator.convertPlaneContactStateCommand(command, motionQPInput);
       if (success)
          qpSolver.addMotionInput(motionQPInput);
    }
