@@ -51,7 +51,10 @@ import us.ihmc.communication.ROS2Tools;
 import us.ihmc.communication.packets.PlanarRegionMessageConverter;
 import us.ihmc.euclid.geometry.ConvexPolygon2D;
 import us.ihmc.euclid.geometry.interfaces.ConvexPolygon2DReadOnly;
+import us.ihmc.euclid.referenceFrame.FramePoint3D;
+import us.ihmc.euclid.referenceFrame.FramePose2D;
 import us.ihmc.euclid.referenceFrame.FramePose3D;
+import us.ihmc.euclid.referenceFrame.FrameVector2D;
 import us.ihmc.euclid.referenceFrame.interfaces.FramePose2DReadOnly;
 import us.ihmc.euclid.referenceFrame.interfaces.FramePose3DReadOnly;
 import us.ihmc.euclid.tuple2D.Vector2D;
@@ -64,6 +67,7 @@ import us.ihmc.graphicsDescription.MeshDataHolder;
 import us.ihmc.javaFXToolkit.graphics.JavaFXMeshDataInterpreter;
 import us.ihmc.javaFXToolkit.messager.JavaFXMessager;
 import us.ihmc.robotEnvironmentAwareness.communication.REACommunicationProperties;
+import us.ihmc.robotics.geometry.PlanarRegion;
 import us.ihmc.robotics.geometry.PlanarRegionsList;
 import us.ihmc.robotics.robotSide.RobotSide;
 import us.ihmc.robotics.robotSide.SideDependentList;
@@ -144,7 +148,7 @@ public class StepGeneratorJavaFXController
       maxAngleTurnInwards = steppingParameters.getMaxAngleTurnInwards();
       maxAngleTurnOutwards = steppingParameters.getMaxAngleTurnOutwards();
       
-      snapAndWiggleSingleStep.getWiggleParameters().deltaInside = 0.03;
+      snapAndWiggleSingleStep.getWiggleParameters().deltaInside = 0.01;
 
       ROS2Tools.MessageTopicNameGenerator controllerPubGenerator = ControllerAPIDefinition.getPublisherTopicNameGenerator(robotName);
       ROS2Tools.MessageTopicNameGenerator controllerSubGenerator = ControllerAPIDefinition.getSubscriberTopicNameGenerator(robotName);
@@ -231,10 +235,11 @@ public class StepGeneratorJavaFXController
          {
             footPolygonToWiggle.set(footPolygons.get(footSide));
             footPolygonToWiggle.scale(1.1);
-            
             snapAndWiggleSingleStep.snapAndWiggle(wiggledPose, footPolygonToWiggle);
             if (!wiggledPose.containsNaN())
-               result = wiggledPose;
+            {
+               result = checkAndHandleTopOfCliff(adjustedBasedOnStanceFoot, wiggledPose, footSide);
+            }
          }
          catch (SnappingFailedException e)
          {
@@ -243,10 +248,43 @@ public class StepGeneratorJavaFXController
              * planar regions around the footstep. Let's just keep the adjusted
              * footstep based on the pose of the current stance foot.
              */
+            PlanarRegion closestRegion = planarRegionsList.findClosestPlanarRegionToPointByProjectionOntoXYPlane(wiggledPose.getX(), wiggledPose.getY());
+            double z = closestRegion.getPlaneZGivenXY(wiggledPose.getX(), wiggledPose.getY());
+            result.setZ(z);
          }
       }
 
       return result;
+   }
+
+   // method to help step generator step down from cinder blocks
+   private FramePose3D checkAndHandleTopOfCliff(FramePose3D inputPose, FramePose3D outputPose, RobotSide footSide) throws SnappingFailedException
+   {
+      double yaw = inputPose.getYaw();
+      double forwardVelocity = forwardVelocityProperty.get();
+      Vector2D desiredHeading = new Vector2D(Math.cos(yaw) * forwardVelocity, Math.sin(yaw) * forwardVelocity);
+      desiredHeading.normalize();
+
+      Vector2D achievedHeading = new Vector2D(outputPose.getX() - inputPose.getX(), outputPose.getY() - inputPose.getY());
+      double projectionScale = achievedHeading.dot(desiredHeading);
+
+      // if wiggling pushes the step more than 5cm back, it's probably at the top of a cliff
+      // try to place step further out
+      if(projectionScale < -0.05)
+      {
+         FramePose3D shiftedPose = new FramePose3D(inputPose);
+         desiredHeading.scale(0.27);
+         shiftedPose.prependTranslation(desiredHeading.getX(), desiredHeading.getY(), 0.0);
+
+         footPolygonToWiggle.set(footPolygons.get(footSide));
+         footPolygonToWiggle.scale(1.05);
+         snapAndWiggleSingleStep.snapAndWiggle(shiftedPose, footPolygonToWiggle);
+         return shiftedPose;
+      }
+      else
+      {
+         return outputPose;
+      }
    }
 
    public void setActiveSecondaryControlOption(SecondaryControlOption activeSecondaryControlOption)

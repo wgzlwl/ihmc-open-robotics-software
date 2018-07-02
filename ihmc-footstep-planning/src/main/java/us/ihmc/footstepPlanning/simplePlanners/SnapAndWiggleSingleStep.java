@@ -6,6 +6,7 @@ import us.ihmc.euclid.geometry.interfaces.ConvexPolygon2DReadOnly;
 import us.ihmc.euclid.referenceFrame.FrameConvexPolygon2D;
 import us.ihmc.euclid.referenceFrame.FramePose3D;
 import us.ihmc.euclid.referenceFrame.ReferenceFrame;
+import us.ihmc.euclid.referenceFrame.interfaces.FramePoint2DReadOnly;
 import us.ihmc.euclid.transform.RigidBodyTransform;
 import us.ihmc.footstepPlanning.polygonSnapping.PlanarRegionsListPolygonSnapper;
 import us.ihmc.footstepPlanning.polygonWiggling.PolygonWiggler;
@@ -44,14 +45,9 @@ public class SnapAndWiggleSingleStep
       PlanarRegion regionToMoveTo = new PlanarRegion();
       RigidBodyTransform snapTransform = PlanarRegionsListPolygonSnapper.snapPolygonToPlanarRegionsList(footPolygon, planarRegionsList,
                                                                                                         regionToMoveTo);
-      if (snapTransform == null)
+      if (snapTransform == null || isOnBoundaryOfPlanarRegions(planarRegionsList, footPolygon))
       {
          throw new SnappingFailedException();
-      }
-
-      if(isOnBoundaryOfPlanarRegions(snapTransform, planarRegionsList, footPolygon))
-      {
-         return null;
       }
 
       solePose.setZ(0.0);
@@ -94,20 +90,13 @@ public class SnapAndWiggleSingleStep
       return null;
    }
 
-   private boolean isOnBoundaryOfPlanarRegions(RigidBodyTransform snapTransform, PlanarRegionsList planarRegionsList, ConvexPolygon2DReadOnly footPolygon)
+   private boolean isOnBoundaryOfPlanarRegions(PlanarRegionsList planarRegionsList, FrameConvexPolygon2D footPolygon)
    {
-      ArrayList<PlanarRegion> intersectingRegions = new ArrayList<>();
-
-      if(snapTransform.getRotationMatrix().isIdentity(0.05) && Math.abs(snapTransform.getTranslationVector().getZ()) < 0.02)
+      for (int i = 0; i < footPolygon.getNumberOfVertices(); i++)
       {
-         for (int i = 0; i < footPolygon.getNumberOfVertices(); i++)
+         if (planarRegionsList.findPlanarRegionsContainingPointByProjectionOntoXYPlane(footPolygon.getVertex(i)) == null)
          {
-            LineSegment2D footPolygonEdge = new LineSegment2D(footPolygon.getVertex(i), footPolygon.getNextVertex(i));
-            planarRegionsList.findPlanarRegionsIntersectingLineSegment(footPolygonEdge, intersectingRegions);
-            if(intersectingRegions.isEmpty())
-            {
-               return true;
-            }
+            return true;
          }
       }
       return false;
