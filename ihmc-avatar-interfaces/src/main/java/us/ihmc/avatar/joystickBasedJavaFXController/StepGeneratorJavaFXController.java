@@ -16,6 +16,7 @@ import static us.ihmc.avatar.joystickBasedJavaFXController.XBoxOneJavaFXControll
 import static us.ihmc.avatar.joystickBasedJavaFXController.XBoxOneJavaFXController.RightStickXAxis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -50,16 +51,23 @@ import us.ihmc.communication.IHMCROS2Publisher;
 import us.ihmc.communication.ROS2Tools;
 import us.ihmc.communication.packets.PlanarRegionMessageConverter;
 import us.ihmc.euclid.geometry.ConvexPolygon2D;
+import us.ihmc.euclid.geometry.LineSegment2D;
 import us.ihmc.euclid.geometry.interfaces.ConvexPolygon2DReadOnly;
+import us.ihmc.euclid.geometry.tools.EuclidGeometryTools;
 import us.ihmc.euclid.referenceFrame.FramePoint3D;
 import us.ihmc.euclid.referenceFrame.FramePose2D;
 import us.ihmc.euclid.referenceFrame.FramePose3D;
 import us.ihmc.euclid.referenceFrame.FrameVector2D;
 import us.ihmc.euclid.referenceFrame.interfaces.FramePose2DReadOnly;
 import us.ihmc.euclid.referenceFrame.interfaces.FramePose3DReadOnly;
+import us.ihmc.euclid.transform.RigidBodyTransform;
+import us.ihmc.euclid.tuple2D.Point2D;
 import us.ihmc.euclid.tuple2D.Vector2D;
+import us.ihmc.euclid.tuple2D.interfaces.Point2DReadOnly;
+import us.ihmc.euclid.tuple3D.Point3D;
 import us.ihmc.euclid.tuple3D.interfaces.Point3DReadOnly;
 import us.ihmc.euclid.tuple4D.interfaces.QuaternionReadOnly;
+import us.ihmc.footstepPlanning.graphSearch.footstepSnapping.PlanarRegionBaseOfCliffAvoider;
 import us.ihmc.footstepPlanning.simplePlanners.SnapAndWiggleSingleStep;
 import us.ihmc.footstepPlanning.simplePlanners.SnapAndWiggleSingleStep.SnappingFailedException;
 import us.ihmc.graphicsDescription.MeshDataGenerator;
@@ -234,11 +242,11 @@ public class StepGeneratorJavaFXController
          try
          {
             footPolygonToWiggle.set(footPolygons.get(footSide));
-            footPolygonToWiggle.scale(1.1);
             snapAndWiggleSingleStep.snapAndWiggle(wiggledPose, footPolygonToWiggle);
             if (!wiggledPose.containsNaN())
             {
                result = checkAndHandleTopOfCliff(adjustedBasedOnStanceFoot, wiggledPose, footSide);
+               result = checkAndHandleBottomOfCliff(planarRegionsList, wiggledPose, footPolygons.get(footSide));
             }
          }
          catch (SnappingFailedException e)
@@ -268,9 +276,9 @@ public class StepGeneratorJavaFXController
       Vector2D achievedHeading = new Vector2D(outputPose.getX() - inputPose.getX(), outputPose.getY() - inputPose.getY());
       double projectionScale = achievedHeading.dot(desiredHeading);
 
-      // if wiggling pushes the step more than 5cm back, it's probably at the top of a cliff
+      // if wiggling pushes the step more than 4cm back, it's probably at the top of a cliff
       // try to place step further out
-      if(projectionScale < -0.05)
+      if(projectionScale < -0.04)
       {
          FramePose3D shiftedPose = new FramePose3D(inputPose);
          desiredHeading.scale(0.27);
@@ -285,6 +293,36 @@ public class StepGeneratorJavaFXController
       {
          return outputPose;
       }
+   }
+   
+   private FramePose3D checkAndHandleBottomOfCliff(PlanarRegionsList planarRegionsList, FramePose3D footPose, ConvexPolygon2DReadOnly footPolygon)
+   {
+      RigidBodyTransform soleTransform = new RigidBodyTransform();
+      footPose.get(soleTransform);
+      
+      ArrayList<LineSegment2D> lineSegmentsInSoleFrame = new ArrayList<>();
+      for (int i = 0; i < footPolygon.getNumberOfVertices(); i++)
+      {
+         Point2DReadOnly point1 = footPolygon.getVertex(i);
+         Point2DReadOnly point2 = footPolygon.getNextVertex(i);
+
+         Point2D averagePoint = EuclidGeometryTools.averagePoint2Ds(Arrays.asList(point1, point2));
+         Point2D extendedPoint = new Point2D(averagePoint);
+         extendedPoint.scale(1.0 + (0.03 / averagePoint.distanceFromOrigin()));
+         lineSegmentsInSoleFrame.add(new LineSegment2D(averagePoint.getX(), averagePoint.getY(), extendedPoint.getX(), extendedPoint.getY()));
+      }
+
+      Point3D highestPointInSoleFrame = new Point3D();
+      LineSegment2D highestLineSegmentInSoleFrame = new LineSegment2D();      
+      double highestPointZ = PlanarRegionBaseOfCliffAvoider.findHighestPointInFrame(planarRegionsList, soleTransform, lineSegmentsInSoleFrame, highestPointInSoleFrame, highestLineSegmentInSoleFrame);
+      
+      if(highestPointZ > 0.05)
+      {
+         double footstepYaw = footPose.getYaw();
+         footPose.prependTranslation(-0.03 * Math.cos(footstepYaw), -0.03 * Math.sin(footstepYaw), 0.0);
+      }
+      
+      return footPose;
    }
 
    public void setActiveSecondaryControlOption(SecondaryControlOption activeSecondaryControlOption)

@@ -67,10 +67,7 @@ public class PlanarRegionBaseOfCliffAvoider implements FootstepNodeChecker
 
       RigidBodyTransform soleTransform = new RigidBodyTransform();
       FootstepNodeTools.getSnappedNodeTransform(node, snapper.getSnapData(node).getSnapTransform(), soleTransform);
-
-      RigidBodyTransform inverseSoleTransform = new RigidBodyTransform(soleTransform);
-      inverseSoleTransform.invert();
-
+      
       ArrayList<LineSegment2D> lineSegmentsInSoleFrame = new ArrayList<>();
       ConvexPolygon2D footPolygon = footPolygons.get(node.getRobotSide());
       for (int i = 0; i < footPolygon.getNumberOfVertices(); i++)
@@ -87,12 +84,12 @@ public class PlanarRegionBaseOfCliffAvoider implements FootstepNodeChecker
       Point3D highestPointInSoleFrame = new Point3D();
       LineSegment2D highestLineSegmentInSoleFrame = new LineSegment2D();
 
-      double maximumCliffZInSoleFrame = findHighestPointInOriginalSoleFrame(planarRegionsList, soleTransform, inverseSoleTransform, lineSegmentsInSoleFrame, highestPointInSoleFrame, highestLineSegmentInSoleFrame);
+      double maximumCliffZInSoleFrame = findHighestPointInFrame(planarRegionsList, soleTransform, lineSegmentsInSoleFrame, highestPointInSoleFrame, highestLineSegmentInSoleFrame);
 
       return maximumCliffZInSoleFrame < cliffHeightToAvoid;
    }
    
-   private double findHighestPointInOriginalSoleFrame(PlanarRegionsList planarRegionsList, RigidBodyTransform soleTransform, RigidBodyTransform inverseSoleTransform, ArrayList<LineSegment2D> lineSegmentsInSoleFrame,
+   public static double findHighestPointInFrame(PlanarRegionsList planarRegionsList, RigidBodyTransform soleTransform, ArrayList<LineSegment2D> lineSegmentsInSoleFrame,
                                                       Point3D highestPointInSoleFrameToPack, LineSegment2D highestLineSegmentInSoleFrameToPack)
      {
         double maxZInSoleFrame = Double.NEGATIVE_INFINITY;
@@ -127,7 +124,7 @@ public class PlanarRegionBaseOfCliffAvoider implements FootstepNodeChecker
                     intersectingRegion.getTransformToWorld(regionTransformToWorld);
                     Point3D pointInOriginalSoleFrame = new Point3D(point.getX(), point.getY(), 0.0);
                     regionTransformToWorld.transform(pointInOriginalSoleFrame);
-                    inverseSoleTransform.transform(pointInOriginalSoleFrame);
+                    soleTransform.inverseTransform(pointInOriginalSoleFrame);
 
                     if (pointInOriginalSoleFrame.getZ() > maxZInSoleFrame)
                     {
