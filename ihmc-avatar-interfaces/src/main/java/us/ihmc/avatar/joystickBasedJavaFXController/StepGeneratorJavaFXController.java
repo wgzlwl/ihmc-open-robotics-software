@@ -49,6 +49,7 @@ import us.ihmc.commons.thread.ThreadTools;
 import us.ihmc.communication.IHMCROS2Publisher;
 import us.ihmc.communication.ROS2Tools;
 import us.ihmc.communication.packets.PlanarRegionMessageConverter;
+import us.ihmc.euclid.geometry.ConvexPolygon2D;
 import us.ihmc.euclid.geometry.interfaces.ConvexPolygon2DReadOnly;
 import us.ihmc.euclid.referenceFrame.FramePose3D;
 import us.ihmc.euclid.referenceFrame.interfaces.FramePose2DReadOnly;
@@ -117,6 +118,7 @@ public class StepGeneratorJavaFXController
    private final AtomicReference<PlanarRegionsList> latestPlanarRegions = new AtomicReference<>(null);
    private final SnapAndWiggleSingleStep snapAndWiggleSingleStep = new SnapAndWiggleSingleStep();
    private final SideDependentList<? extends ConvexPolygon2DReadOnly> footPolygons;
+   private final ConvexPolygon2D footPolygonToWiggle = new ConvexPolygon2D();
 
    public StepGeneratorJavaFXController(String robotName, JavaFXMessager messager, WalkingControllerParameters walkingControllerParameters, Ros2Node ros2Node,
                                         JavaFXRobotVisualizer javaFXRobotVisualizer, HumanoidRobotKickMessenger kickMessenger,
@@ -141,6 +143,8 @@ public class StepGeneratorJavaFXController
       maxStepWidth = steppingParameters.getMaxStepWidth();
       maxAngleTurnInwards = steppingParameters.getMaxAngleTurnInwards();
       maxAngleTurnOutwards = steppingParameters.getMaxAngleTurnOutwards();
+      
+      snapAndWiggleSingleStep.getWiggleParameters().deltaInside = 0.03;
 
       ROS2Tools.MessageTopicNameGenerator controllerPubGenerator = ControllerAPIDefinition.getPublisherTopicNameGenerator(robotName);
       ROS2Tools.MessageTopicNameGenerator controllerSubGenerator = ControllerAPIDefinition.getSubscriberTopicNameGenerator(robotName);
@@ -213,7 +217,7 @@ public class StepGeneratorJavaFXController
 
       FramePose3D adjustedBasedOnStanceFoot = new FramePose3D();
       adjustedBasedOnStanceFoot.getPosition().set(footstepPose.getPosition());
-      adjustedBasedOnStanceFoot.setZ(continuousStepGenerator.getCurrentSupportFootPose().getZ() - 0.02);
+      adjustedBasedOnStanceFoot.setZ(continuousStepGenerator.getCurrentSupportFootPose().getZ());
       adjustedBasedOnStanceFoot.setOrientation(footstepPose.getOrientation());
       result = adjustedBasedOnStanceFoot;
 
@@ -225,7 +229,10 @@ public class StepGeneratorJavaFXController
          FramePose3D wiggledPose = new FramePose3D(adjustedBasedOnStanceFoot);
          try
          {
-            snapAndWiggleSingleStep.snapAndWiggle(wiggledPose, footPolygons.get(footSide));
+            footPolygonToWiggle.set(footPolygons.get(footSide));
+            footPolygonToWiggle.scale(1.1);
+            
+            snapAndWiggleSingleStep.snapAndWiggle(wiggledPose, footPolygonToWiggle);
             if (!wiggledPose.containsNaN())
                result = wiggledPose;
          }
