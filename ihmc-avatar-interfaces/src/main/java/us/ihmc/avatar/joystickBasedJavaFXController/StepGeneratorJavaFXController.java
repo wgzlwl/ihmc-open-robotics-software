@@ -107,6 +107,7 @@ public class StepGeneratorJavaFXController
    private final AtomicBoolean isWalking = new AtomicBoolean(false);
    private final JavaFXRobotVisualizer javaFXRobotVisualizer;
    private final double footLength, inPlaceStepWidth, maxStepLength, maxStepWidth, maxAngleTurnInwards, maxAngleTurnOutwards;
+   private final double minimumPlanarRegionArea;
 
    private final AtomicBoolean isLeftFootInSupport = new AtomicBoolean(false);
    private final AtomicBoolean isRightFootInSupport = new AtomicBoolean(false);
@@ -159,6 +160,7 @@ public class StepGeneratorJavaFXController
       maxStepWidth = steppingParameters.getMaxStepWidth();
       maxAngleTurnInwards = steppingParameters.getMaxAngleTurnInwards();
       maxAngleTurnOutwards = steppingParameters.getMaxAngleTurnOutwards();
+      minimumPlanarRegionArea = 2.0 * steppingParameters.getFootLength() * steppingParameters.getFootWidth();
       
       snapAndWiggleSingleStep.getWiggleParameters().deltaInside = 0.03;
 
@@ -241,6 +243,7 @@ public class StepGeneratorJavaFXController
 
       if (planarRegionsList != null)
       {
+         planarRegionsList.getPlanarRegionsAsList().removeIf(region -> region.getConvexHull().getArea() < minimumPlanarRegionArea);
          snapAndWiggleSingleStep.setPlanarRegions(planarRegionsList);
          FramePose3D wiggledPose = new FramePose3D(adjustedBasedOnStanceFoot);
          try
