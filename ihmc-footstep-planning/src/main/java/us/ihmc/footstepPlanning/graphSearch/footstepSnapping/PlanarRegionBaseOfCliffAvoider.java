@@ -84,15 +84,16 @@ public class PlanarRegionBaseOfCliffAvoider implements FootstepNodeChecker
       Point3D highestPointInSoleFrame = new Point3D();
       LineSegment2D highestLineSegmentInSoleFrame = new LineSegment2D();
 
-      double maximumCliffZInSoleFrame = findHighestPointInFrame(planarRegionsList, soleTransform, lineSegmentsInSoleFrame, highestPointInSoleFrame, highestLineSegmentInSoleFrame);
+      double maximumCliffZInSoleFrame = findHighestPointInFrame(planarRegionsList, soleTransform, lineSegmentsInSoleFrame, highestPointInSoleFrame, highestLineSegmentInSoleFrame, new Point3D());
 
       return maximumCliffZInSoleFrame < cliffHeightToAvoid;
    }
    
    public static double findHighestPointInFrame(PlanarRegionsList planarRegionsList, RigidBodyTransform soleTransform, ArrayList<LineSegment2D> lineSegmentsInSoleFrame,
-                                                      Point3D highestPointInSoleFrameToPack, LineSegment2D highestLineSegmentInSoleFrameToPack)
+                                                      Point3D highestPointInSoleFrameToPack, LineSegment2D highestLineSegmentInSoleFrameToPack, Point3D closestCliffPointToPack)
      {
         double maxZInSoleFrame = Double.NEGATIVE_INFINITY;
+        double closestCliffPointDistance = Double.POSITIVE_INFINITY;
 
         LineSegment2D lineSegmentInWorldFrame = new LineSegment2D();
         Point3D pointOneInWorldFrame = new Point3D();
@@ -125,6 +126,12 @@ public class PlanarRegionBaseOfCliffAvoider implements FootstepNodeChecker
                     Point3D pointInOriginalSoleFrame = new Point3D(point.getX(), point.getY(), 0.0);
                     regionTransformToWorld.transform(pointInOriginalSoleFrame);
                     soleTransform.inverseTransform(pointInOriginalSoleFrame);
+
+                    if(pointInOriginalSoleFrame.getZ() > 0.03 && pointInOriginalSoleFrame.distanceFromOrigin() < closestCliffPointDistance)
+                    {
+                       closestCliffPointDistance = pointInOriginalSoleFrame.distanceFromOrigin();
+                       closestCliffPointToPack.set(pointInOriginalSoleFrame);
+                    }
 
                     if (pointInOriginalSoleFrame.getZ() > maxZInSoleFrame)
                     {

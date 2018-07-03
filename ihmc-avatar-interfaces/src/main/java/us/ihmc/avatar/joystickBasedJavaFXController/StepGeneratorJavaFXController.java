@@ -106,13 +106,16 @@ public class StepGeneratorJavaFXController
    private final AtomicReference<Double> trajectoryDuration;
    private final AtomicBoolean isWalking = new AtomicBoolean(false);
    private final JavaFXRobotVisualizer javaFXRobotVisualizer;
-   private final double inPlaceStepWidth, maxStepLength, maxStepWidth, maxAngleTurnInwards, maxAngleTurnOutwards;
+   private final double footLength, inPlaceStepWidth, maxStepLength, maxStepWidth, maxAngleTurnInwards, maxAngleTurnOutwards;
 
    private final AtomicBoolean isLeftFootInSupport = new AtomicBoolean(false);
    private final AtomicBoolean isRightFootInSupport = new AtomicBoolean(false);
    private final SideDependentList<AtomicBoolean> isFootInSupport = new SideDependentList<>(isLeftFootInSupport, isRightFootInSupport);
    private final BooleanProvider isInDoubleSupport = () -> isLeftFootInSupport.get() && isRightFootInSupport.get();
    private final DoubleProvider stepTime;
+
+   // Val was stepping on herself when turning, this is a simple way to get around that
+   private static final double stepWidthScaleFactor = 1.2;
 
    public enum SecondaryControlOption
    {
@@ -150,13 +153,14 @@ public class StepGeneratorJavaFXController
       continuousStepGenerator.setFootPoseProvider(robotSide -> new FramePose3D(javaFXRobotVisualizer.getFullRobotModel().getSoleFrame(robotSide)));
 
       SteppingParameters steppingParameters = walkingControllerParameters.getSteppingParameters();
-      inPlaceStepWidth = steppingParameters.getInPlaceWidth();
+      footLength = steppingParameters.getFootLength();
+      inPlaceStepWidth = stepWidthScaleFactor * steppingParameters.getInPlaceWidth();
       maxStepLength = steppingParameters.getMaxStepLength();
       maxStepWidth = steppingParameters.getMaxStepWidth();
       maxAngleTurnInwards = steppingParameters.getMaxAngleTurnInwards();
       maxAngleTurnOutwards = steppingParameters.getMaxAngleTurnOutwards();
       
-      snapAndWiggleSingleStep.getWiggleParameters().deltaInside = 0.01;
+      snapAndWiggleSingleStep.getWiggleParameters().deltaInside = 0.05;
 
       ROS2Tools.MessageTopicNameGenerator controllerPubGenerator = ControllerAPIDefinition.getPublisherTopicNameGenerator(robotName);
       ROS2Tools.MessageTopicNameGenerator controllerSubGenerator = ControllerAPIDefinition.getSubscriberTopicNameGenerator(robotName);
@@ -278,15 +282,13 @@ public class StepGeneratorJavaFXController
 
       // if wiggling pushes the step more than 4cm back, it's probably at the top of a cliff
       // try to place step further out
-      if(projectionScale < -0.04)
+      double wiggleInWrongDirectionThreshold = 0.04;
+      if(projectionScale < - wiggleInWrongDirectionThreshold)
       {
          FramePose3D shiftedPose = new FramePose3D(inputPose);
-         desiredHeading.scale(0.27);
+         desiredHeading.scale(footLength);
          shiftedPose.prependTranslation(desiredHeading.getX(), desiredHeading.getY(), 0.0);
-
-         footPolygonToWiggle.set(footPolygons.get(footSide));
-         footPolygonToWiggle.scale(1.05);
-         snapAndWiggleSingleStep.snapAndWiggle(shiftedPose, footPolygonToWiggle);
+         snapAndWiggleSingleStep.snapAndWiggle(shiftedPose, footPolygons.get(footSide));
          return shiftedPose;
       }
       else
@@ -294,34 +296,32 @@ public class StepGeneratorJavaFXController
          return outputPose;
       }
    }
-   
+
    private FramePose3D checkAndHandleBottomOfCliff(PlanarRegionsList planarRegionsList, FramePose3D footPose, ConvexPolygon2DReadOnly footPolygon)
    {
       RigidBodyTransform soleTransform = new RigidBodyTransform();
       footPose.get(soleTransform);
-      
-      ArrayList<LineSegment2D> lineSegmentsInSoleFrame = new ArrayList<>();
-      for (int i = 0; i < footPolygon.getNumberOfVertices(); i++)
-      {
-         Point2DReadOnly point1 = footPolygon.getVertex(i);
-         Point2DReadOnly point2 = footPolygon.getNextVertex(i);
 
-         Point2D averagePoint = EuclidGeometryTools.averagePoint2Ds(Arrays.asList(point1, point2));
-         Point2D extendedPoint = new Point2D(averagePoint);
-         extendedPoint.scale(1.0 + (0.03 / averagePoint.distanceFromOrigin()));
-         lineSegmentsInSoleFrame.add(new LineSegment2D(averagePoint.getX(), averagePoint.getY(), extendedPoint.getX(), extendedPoint.getY()));
-      }
+      double closestDistanceToCliff = 0.05;
+
+      ArrayList<LineSegment2D> lineSegmentsInSoleFrame = new ArrayList<>();
+      lineSegmentsInSoleFrame.add(new LineSegment2D(0.5 * footLength, 0.0, 0.5 * footLength + closestDistanceToCliff, 0.0));
+      lineSegmentsInSoleFrame.add(new LineSegment2D(-0.5 * footLength, 0.0, -0.5 * footLength - closestDistanceToCliff, 0.0));
 
       Point3D highestPointInSoleFrame = new Point3D();
-      LineSegment2D highestLineSegmentInSoleFrame = new LineSegment2D();      
-      double highestPointZ = PlanarRegionBaseOfCliffAvoider.findHighestPointInFrame(planarRegionsList, soleTransform, lineSegmentsInSoleFrame, highestPointInSoleFrame, highestLineSegmentInSoleFrame);
-      
+      LineSegment2D highestLineSegmentInSoleFrame = new LineSegment2D();
+      Point3D closestPointOnCliff = new Point3D();
+      double highestPointZ = PlanarRegionBaseOfCliffAvoider.findHighestPointInFrame(planarRegionsList, soleTransform, lineSegmentsInSoleFrame, highestPointInSoleFrame, highestLineSegmentInSoleFrame, closestPointOnCliff);
+
       if(highestPointZ > 0.05)
       {
+         double shiftSign = Math.signum(- closestPointOnCliff.getX());
+         double shiftAmount = shiftSign * (closestDistanceToCliff - (Math.abs(closestPointOnCliff.getX()) - 0.5 * footLength));
+
          double footstepYaw = footPose.getYaw();
-         footPose.prependTranslation(-0.03 * Math.cos(footstepYaw), -0.03 * Math.sin(footstepYaw), 0.0);
+         footPose.prependTranslation(shiftAmount * Math.cos(footstepYaw), shiftAmount * Math.sin(footstepYaw), 0.0);
       }
-      
+
       return footPose;
    }
 
