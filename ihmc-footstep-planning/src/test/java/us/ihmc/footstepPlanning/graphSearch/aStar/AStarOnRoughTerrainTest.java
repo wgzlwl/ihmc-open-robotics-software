@@ -48,6 +48,13 @@ public class AStarOnRoughTerrainTest extends FootstepPlannerOnRoughTerrainTest
       super.testWithWall(true);
    }
 
+   @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 2.5)
+   @Test(timeout = 30000)
+   public void testDownCorridor()
+   {
+      super.testDownCorridor(true);
+   }
+
    @Override
    @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 0.0)
    @Test(timeout = 30000)
