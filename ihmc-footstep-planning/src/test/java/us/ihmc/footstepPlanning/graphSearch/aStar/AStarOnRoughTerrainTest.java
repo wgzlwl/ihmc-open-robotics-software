@@ -49,7 +49,7 @@ public class AStarOnRoughTerrainTest extends FootstepPlannerOnRoughTerrainTest
    }
 
    @ContinuousIntegrationAnnotations.ContinuousIntegrationTest(estimatedDuration = 2.5)
-   @Test(timeout = 30000)
+   @Test(timeout = 1000000)
    public void testDownCorridor()
    {
       super.testDownCorridor(true);
